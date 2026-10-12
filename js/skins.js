@@ -345,29 +345,38 @@
   };
 
   /* ===================== Purikura (プリクラ) ===================== */
-  // photo-booth strip from the profile pictures; soft colours, thin frames, small handwritten notes
+  // photo-booth sheet: 2×2 shots from the profile pictures with graffiti, stamps and a date print
   SKINS.purikura = {
     name: 'Purikura',
-    fonts: ['hachi-maru'],
+    fonts: ['hachi-maru', 'mochiy'],
     head(ctx) {
       const x = t(ctx);
       const [a, b] = pair(ctx);
-      const notes = ['ずっと', 'love', 'いっしょ', '♡'];
-      const shot = (s, i) => `<div class="skq-shot">${avatarBox(s, 'skq-photo')}<span class="skq-note">${notes[i]}</span></div>`;
+      const spark = (sz, c, r) => App.kit.icon(App.kit.SPARK, sz, c, r || 0, 1);
+      const heart = (sz, c, r) => App.kit.icon(App.kit.HEART, sz, c, r || 0, 1);
+      const shots = [
+        [a, `<span class="skq-g g1">ずっと<br>いっしょ</span><span class="skq-stamp st1">${heart(22, '#FFFFFF', -12)}</span>`],
+        [b, `<span class="skq-g g2">LOVE</span><span class="skq-stamp st2">${spark(20, '#FFFFFF')}${spark(11, '#FFFFFF')}</span>`],
+        [a, `<span class="skq-g g3">♡ R</span><span class="skq-stamp st3">${spark(16, '#FFFFFF', 10)}</span>`],
+        [b, `<span class="skq-g g4">E ♡</span><span class="skq-date">${(ctx.meta.date || '').replace(/-/g, '.')}</span>`],
+      ];
       return `<header class="skq-head">
-        <div class="skq-strip">${shot(a, 0)}${shot(b, 1)}${shot(a, 2)}${shot(b, 3)}</div>
-        ${x.sub || x.date ? `<div class="skq-scribble">${[x.date, x.sub].filter(Boolean).join('<i>·</i>')}</div>` : ''}
-        ${x.title ? `<h1 class="xc-title">${x.title}</h1>` : ''}
+        <div class="skq-sheet">${shots.map(([s, deco], i) => `<div class="skq-shot s${i}">${avatarBox(s, 'skq-photo')}${deco}</div>`).join('')}</div>
+        <div class="skq-under">
+          ${x.title ? `<h1 class="xc-title">${spark(18, '#FF8F91')}<span>${x.title}</span></h1>` : ''}
+          ${x.sub ? `<div class="skq-scribble">${x.sub}</div>` : ''}
+        </div>
       </header>`;
     },
-    divider: () => `<span class="skq-div"><i></i>${App.kit.icon(App.kit.SPARK, 11, '#E8A5A8')}<i></i></span>`,
+    divider: () => `<span class="skq-div">${App.kit.icon(App.kit.SPARK, 12, '#FFB3B5')}${App.kit.icon(App.kit.HEART, 14, '#FF8F91')}${App.kit.icon(App.kit.SPARK, 12, '#C2C2CA')}</span>`,
     foot(ctx) {
       const x = t(ctx);
-      return `<footer class="skq-foot"><span class="skq-ft">photo booth${x.date ? ' · ' + x.date : ''}</span>${x.foot ? `<span class="skq-sign">${x.foot}</span>` : ''}</footer>`;
+      return `<footer class="skq-foot"><span class="skq-logo">${App.kit.icon(App.kit.SPARK, 12, '#FFFFFF')}PURIKURA</span>${x.foot ? `<span class="skq-sign">${x.foot}</span>` : ''}</footer>`;
     },
     over(ctx) {
       const m = ctx.st.panel.margin;
-      return `<span class="skq-sp" style="left:${m - 12}px;top:${m - 12}px">${App.kit.icon(App.kit.SPARK, 24, '#FFFFFF', 0, 0.95)}</span>`;
+      const sp = (l, tp, sz, c) => `<span class="skq-sp" style="left:${l};top:${tp}">${App.kit.icon(App.kit.SPARK, sz, c, 0, 0.95)}</span>`;
+      return sp(`${m - 14}px`, `${m - 14}px`, 28, '#FFFFFF') + sp(`calc(100% - ${m + 12}px)`, `${m + 46}px`, 18, '#FFFFFF') + sp(`${m - 10}px`, `calc(100% - ${m + 40}px)`, 16, '#FFFFFF');
     },
   };
 
