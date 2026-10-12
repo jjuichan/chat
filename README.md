@@ -137,7 +137,7 @@ js/fonts.js         글꼴 목록 · 내보내기용 글꼴 서브셋 임베드
 js/export.js        PNG 저장
 vendor/html-to-image.js   DOM → 이미지 (MIT)
 
-notes.html          리츠 노트 (설정 수집기)
+notes.html          리츠 노트 (설정 수집기) — js/css를 고치면 <script>·<link>의 ?v= 값을 올려야 휴대폰 캐시에 옛 파일이 섞이지 않아요
 css/notes.css       리츠 노트 UI
 js/notes/store.js   데이터 · 저장 · 합치기 · 파일 백업
 js/notes/gemini.js  Gemini 호출 (설정 추출 · 요약 압축)

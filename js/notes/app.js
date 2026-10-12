@@ -1441,6 +1441,12 @@
     renderBanners();
   });
 
+  // Anything that slips through shows up as a message rather than a silently blank screen.
+  window.addEventListener('error', (e) => toast(`오류가 났어요: ${e.message}. 새로고침해 주세요.`, { err: true, ms: 8000 }));
+  window.addEventListener('unhandledrejection', (e) =>
+    toast(`오류가 났어요: ${(e.reason && e.reason.message) || e.reason}. 새로고침해 주세요.`, { err: true, ms: 8000 })
+  );
+
   (async function start() {
     await N.load();
     render();
