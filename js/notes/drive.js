@@ -17,6 +17,10 @@
   let fileId = null;
   let running = null;
   let again = false;
+  let lastSyncAt = 0;
+  let retryTimer = null;
+  let retryDelay = 0;
+  let knownRemote = ''; // modifiedTime of the Drive file as we last left it
 
   const D = (N.drive = { status: 'off', error: '', dirty: false });
 
@@ -103,9 +107,32 @@
     }
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      throw new Error((data.error && data.error.message) || `드라이브 요청 실패 (${res.status})`);
+      throw driveError(res.status, data.error || {});
     }
     return res;
+  }
+
+  // Turn Drive's error into something readable, and say whether waiting will fix it.
+  function driveError(status, e) {
+    const reasons = (e.errors || []).map((x) => x.reason).concat(e.status || '').join(' ');
+    const msg = String(e.message || '');
+    let text = msg || `드라이브 요청 실패 (${status})`;
+    let kind = 'other';
+    if (/storageQuotaExceeded|teamDriveFileLimitExceeded/i.test(reasons) || /storage quota|storage limit/i.test(msg)) {
+      kind = 'storage';
+      text = '구글 드라이브 저장 공간이 꽉 찼어요. Gmail·구글 포토와 함께 쓰는 공간이라, 그쪽을 정리하면 다시 동기화돼요. 그동안은 파일 백업을 써 주세요.';
+    } else if (/accessNotConfigured|SERVICE_DISABLED/i.test(reasons) || /has not been used|is disabled/i.test(msg)) {
+      kind = 'disabled';
+      text = '이 프로젝트에서 Google Drive API가 꺼져 있어요. Cloud 콘솔의 Drive API 페이지에서 ‘사용’을 눌러 주세요.';
+    } else if (status === 429 || /rateLimitExceeded|userRateLimitExceeded|quotaExceeded|dailyLimitExceeded|RESOURCE_EXHAUSTED/i.test(reasons) || /rate limit|quota/i.test(msg)) {
+      kind = 'rate';
+      text = '드라이브 요청 한도에 잠시 걸렸어요. 조금 뒤 자동으로 다시 시도해요.';
+    }
+    const err = new Error(text);
+    err.kind = kind;
+    err.status = status;
+    err.raw = msg;
+    return err;
   }
 
   async function findFile() {
@@ -120,22 +147,25 @@
   async function upload(body) {
     const id = await findFile();
     if (id) {
-      await api(`https://www.googleapis.com/upload/drive/v3/files/${id}?uploadType=media`, {
+      const res = await api(`https://www.googleapis.com/upload/drive/v3/files/${id}?uploadType=media&fields=modifiedTime`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body,
       });
+      knownRemote = (await res.json().catch(() => ({}))).modifiedTime || '';
       return;
     }
     const boundary = 'rn' + N.util.uid();
     const meta = JSON.stringify({ name: FILE, parents: ['appDataFolder'], mimeType: 'application/json' });
     const multipart = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${meta}\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n${body}\r\n--${boundary}--`;
-    const res = await api('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {
+    const res = await api('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,modifiedTime', {
       method: 'POST',
       headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
       body: multipart,
     });
-    fileId = (await res.json()).id;
+    const made = await res.json();
+    fileId = made.id;
+    knownRemote = made.modifiedTime || '';
   }
 
   async function syncOnce() {
@@ -144,9 +174,13 @@
     const id = await findFile();
     let merged = N.state;
     if (id) {
-      const res = await api(`https://www.googleapis.com/drive/v3/files/${id}?alt=media`);
-      const remote = await res.json().catch(() => null);
-      if (N.isValidData(remote)) merged = N.merge(N.state, remote);
+      // Only download when another device changed the file since our last upload.
+      const meta = await (await api(`https://www.googleapis.com/drive/v3/files/${id}?fields=modifiedTime`)).json();
+      if (!knownRemote || meta.modifiedTime !== knownRemote) {
+        const res = await api(`https://www.googleapis.com/drive/v3/files/${id}?alt=media`);
+        const remote = await res.json().catch(() => null);
+        if (N.isValidData(remote)) merged = N.merge(N.state, remote);
+      }
     }
     D.dirty = false;
     await upload(JSON.stringify(merged));
@@ -161,6 +195,16 @@
     setStatus('ok');
   }
 
+  // After a rate-limit error, try again later: 1, 2, 4 … up to 30 minutes.
+  function scheduleRetry() {
+    clearTimeout(retryTimer);
+    retryDelay = Math.min(retryDelay ? retryDelay * 2 : 60000, 30 * 60000);
+    retryTimer = setTimeout(() => {
+      retryTimer = null;
+      D.sync().catch(() => {});
+    }, retryDelay);
+  }
+
   // Sync now. Pass {interactive:true} from a click so an expired login can be renewed.
   D.sync = async function (opts) {
     if (!N.settings.driveOn || !N.settings.clientId) return;
@@ -172,15 +216,22 @@
       again = true;
       return running;
     }
+    clearTimeout(retryTimer);
+    retryTimer = null;
     running = (async () => {
       try {
         do {
           again = false;
+          lastSyncAt = Date.now();
           await syncOnce();
         } while (again);
+        retryDelay = 0;
       } catch (e) {
         if (e.login) setStatus('login');
-        else setStatus('error', e.message);
+        else {
+          setStatus('error', e.message);
+          if (e.kind === 'rate') scheduleRetry();
+        }
         throw e;
       } finally {
         running = null;
@@ -189,10 +240,20 @@
     return running;
   };
 
-  const autoSync = N.util.debounce(() => {
-    if (D.hasToken()) D.sync().catch(() => {});
-    else if (N.settings.driveOn) setStatus('login');
-  }, 2500);
+  // Edits come in bursts; wait for a pause, and never sync more than once per 15 seconds.
+  const MIN_GAP = 15000;
+  let gapTimer = null;
+  const autoSync = N.util.debounce(function go() {
+    if (!D.hasToken()) {
+      if (N.settings.driveOn) setStatus('login');
+      return;
+    }
+    if (D.status === 'error' && retryTimer) return; // a retry is already waiting
+    const wait = lastSyncAt + MIN_GAP - Date.now();
+    clearTimeout(gapTimer);
+    if (wait > 0) gapTimer = setTimeout(go, wait);
+    else D.sync().catch(() => {});
+  }, 4000);
 
   N.on('change', (o) => {
     if (o && o.external) return;

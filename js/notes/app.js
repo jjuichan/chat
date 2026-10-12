@@ -243,10 +243,20 @@
         .filter((f) => f.cat === cat.id)
         .sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status] || (b.fresh ? 1 : 0) - (a.fresh ? 1 : 0) || a.createdAt - b.createdAt);
       if (!list.length && narrowed) return;
-      html += `<section class="cat" data-cat="${cat.id}">
-        <div class="cat-head"><h3>${esc(N.catLabel(cat.id, charId))}</h3><span class="count">${list.length || ''}</span>
+      // the 🔞 section stays folded until asked, so a glance at the screen doesn't show it
+      const veiled = cat.id === 'adult' && !N.settings.showAdult;
+      const veil = cat.id === 'adult'
+        ? `<button class="btn btn-sm btn-ghost veil-btn" data-act="toggle-adult">${veiled ? '보이기' : '가리기'}</button>`
+        : '';
+      const body = veiled
+        ? `<p class="empty-cat">${list.length ? `가려진 설정 ${list.length}개 · ‘보이기’를 누르면 펼쳐져요` : esc(cat.hint)}</p>`
+        : list.length
+          ? list.map(factCard).join('')
+          : `<p class="empty-cat">${cat.hint ? esc(cat.hint) : '아직 없음'}</p>`;
+      html += `<section class="cat${cat.id === 'adult' ? ' cat-adult' : ''}" data-cat="${cat.id}">
+        <div class="cat-head"><h3>${esc(N.catLabel(cat.id, charId))}</h3><span class="count">${list.length || ''}</span>${veil}
           <button class="icon-btn" data-act="add" data-cat="${cat.id}" title="이 카테고리에 추가" aria-label="이 카테고리에 추가"><svg><use href="#i-plus"/></svg></button></div>
-        ${list.length ? list.map(factCard).join('') : `<p class="empty-cat">${cat.hint ? esc(cat.hint) : '아직 없음'}</p>`}
+        ${body}
       </section>`;
     });
     box.innerHTML = html || `<div class="empty"><b>조건에 맞는 설정이 없어요</b></div>`;
@@ -318,6 +328,10 @@
     const pair = b.closest('.pair');
 
     if (act === 'add') return addFactModal(charId, b.dataset.cat);
+    if (act === 'toggle-adult') {
+      N.saveSettings({ showAdult: !N.settings.showAdult });
+      return renderFactList(charId);
+    }
     if (act === 'summary') return summaryModal(charId);
     if (act === 'go-collect') {
       view.target = charId;
@@ -460,9 +474,11 @@
   }
 
   /* ---------- summary for the chat app's memory box ---------- */
-  function buildSummary(charId, includeOpen) {
+  function buildSummary(charId, includeOpen, includeAdult) {
     const c = N.CHARS[charId];
-    const fs = N.facts(charId).filter((f) => f.status === 'canon' || (includeOpen && f.status === 'open'));
+    const fs = N.facts(charId).filter(
+      (f) => (f.status === 'canon' || (includeOpen && f.status === 'open')) && (includeAdult || f.cat !== 'adult')
+    );
     const lines = [`[${c.full} 설정]`];
     N.CATS.forEach((cat) => {
       const items = fs.filter((f) => f.cat === cat.id).map((f) => f.text.replace(/\s*\n\s*/g, ' '));
@@ -480,6 +496,7 @@
       <p class="hint">AI 채팅의 메모리나 설정란에 그대로 붙여넣으세요. 기본은 <b>확정</b>한 설정만 들어가요. 직접 고쳐서 복사해도 돼요.</p>
       <div class="modal-opts">
         <label class="check"><input type="checkbox" id="sOpen"${includeOpen ? ' checked' : ''} /><span>미정도 포함</span></label>
+        <label class="check"><input type="checkbox" id="sAdult" /><span>🔞 포함</span></label>
         <span class="hint" id="sCount"></span>
       </div>
       <textarea id="sText"></textarea>
@@ -491,7 +508,7 @@
       (box) => {
         const ta = $('#sText', box);
         const fill = () => {
-          const r = buildSummary(charId, includeOpen);
+          const r = buildSummary(charId, includeOpen, $('#sAdult', box).checked);
           ta.value = r.text || '(아직 넣을 설정이 없어요. 프로필에서 설정을 ‘확정’하거나 ‘미정도 포함’을 켜 주세요.)';
           count();
         };
@@ -501,6 +518,7 @@
           includeOpen = e.target.checked;
           fill();
         };
+        $('#sAdult', box).onchange = fill;
         $('[data-close]', box).onclick = closeModal;
         $('#sCopy', box).onclick = () => copyText(ta.value);
         $('#sCompress', box).onclick = async (e) => {
@@ -589,6 +607,32 @@
     if (id) openReader(id);
   });
 
+  // Split text into pieces of about `size` characters, cutting at blank lines, then
+  // line breaks, then spaces, so a piece rarely ends mid-sentence. Returns [{s, e}].
+  function chunkText(text, size) {
+    const out = [];
+    let s = 0;
+    while (s < text.length) {
+      let e = Math.min(text.length, s + size);
+      if (e < text.length) {
+        const win = text.slice(s, e);
+        const cut = [/\n\s*\n(?![\s\S]*\n\s*\n)/, /\n(?![\s\S]*\n)/, /\s(?![\s\S]*\s)/]
+          .map((re) => {
+            const m = re.exec(win);
+            return m && m.index > size * 0.4 ? m.index + m[0].length : -1;
+          })
+          .find((i) => i > 0);
+        if (cut) e = s + cut;
+      }
+      out.push({ s, e });
+      s = e;
+    }
+    return out;
+  }
+
+  const CHUNK = 3000; // characters per piece after a refusal
+  const SUBCHUNK = 900; // a refused piece is tried once more in smaller bits
+
   async function runExtract(logId, charId) {
     const log = N.state.logs[logId];
     if (!log) return;
@@ -597,22 +641,83 @@
       toast(keys === 'paid' ? '🔒 대화라서 유료 키가 필요해요' : 'Gemini API 키가 필요해요', { err: true, action: { label: '설정으로', fn: () => setTab('settings') } });
       return;
     }
-    view.review = { logId, charId, items: [], loading: true, error: '', keyUsed: null };
+    const r = (view.review = { logId, charId, items: [], loading: true, error: '', keyUsed: null, progress: null, blocked: [], cancel: false });
     if (view.tab !== 'collect') setTab('collect');
     else renderReview();
     $('#reviewCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const alive = () => view.review === r && !r.cancel;
+    const used = new Set();
+    const run = async (s, e) => {
+      const items = await N.gemini.extract(log.text.slice(s, e), charId, keys);
+      used.add(N.gemini.lastKey);
+      return items;
+    };
+
     try {
-      const items = await N.gemini.extract(log.text, charId, keys);
-      if (!view.review || view.review.logId !== logId) return;
-      items.forEach((it) => (it.on = true));
-      view.review.items = items;
-      view.review.keyUsed = N.gemini.lastKey;
-      if (N.gemini.lastKey === 'fallback') toast('무료 한도가 차서 이번엔 유료 키로 처리했어요', { ms: 5000 });
+      try {
+        r.items = await run(0, log.text.length);
+      } catch (e) {
+        if (!e.blocked && !e.tooLong) throw e;
+        // Refused or too long: go piece by piece and keep whatever gets through.
+        const pieces = chunkText(log.text, CHUNK);
+        const found = [];
+        for (let i = 0; i < pieces.length && alive(); i++) {
+          r.progress = { at: i + 1, of: pieces.length };
+          renderReview();
+          const p = pieces[i];
+          try {
+            found.push(...(await run(p.s, p.e)));
+          } catch (err) {
+            if (!err.blocked && !err.tooLong) throw err;
+            for (const sub of chunkText(log.text.slice(p.s, p.e), SUBCHUNK)) {
+              if (!alive()) break;
+              try {
+                found.push(...(await run(p.s + sub.s, p.s + sub.e)));
+              } catch (err2) {
+                if (!err2.blocked && !err2.tooLong) throw err2;
+                r.blocked.push({ s: p.s + sub.s, e: p.s + sub.e });
+              }
+            }
+          }
+        }
+        // the same fact can come back from several pieces
+        const seen = new Set();
+        r.items = found.filter((it) => {
+          const k = it.relation === 'same' ? 'same:' + it.relatedId : U.norm(it.text);
+          if (seen.has(k)) return false;
+          seen.add(k);
+          return true;
+        });
+        r.chunked = pieces.length;
+      }
+      if (view.review !== r) return;
+      // remember which parts Gemini refused, so the reader can shade them
+      const blocked = mergeRanges(r.blocked);
+      if (JSON.stringify(blocked) !== JSON.stringify(log.blocked || []))
+        N.commit((s) => s.logs[logId] && Object.assign(s.logs[logId], { blocked, updatedAt: Date.now() }), { quiet: true });
+      r.items.forEach((it) => (it.on = true));
+      r.keyUsed = used.has('fallback') ? 'fallback' : used.has('paid') ? 'paid' : 'free';
+      if (used.has('fallback')) toast('무료 한도가 차서 유료 키로 처리한 부분이 있어요', { ms: 5000 });
     } catch (e) {
-      if (view.review) view.review.error = e.message;
+      if (view.review === r) r.error = e.message;
     }
-    if (view.review) view.review.loading = false;
+    if (view.review !== r) return;
+    r.loading = false;
+    r.progress = null;
     renderReview();
+  }
+
+  function mergeRanges(list) {
+    const out = [];
+    list
+      .slice()
+      .sort((a, b) => a.s - b.s)
+      .forEach((x) => {
+        const last = out[out.length - 1];
+        if (last && x.s <= last.e) last.e = Math.max(last.e, x.e);
+        else out.push({ s: x.s, e: x.e });
+      });
+    return out;
   }
 
   function renderReview() {
@@ -626,7 +731,12 @@
     const c = N.CHARS[r.charId];
     const title = esc(logTitle(r.logId) || '');
     if (r.loading) {
-      card.innerHTML = `<h2 class="card-title">${esc(c.name)} 설정 찾는 중…</h2><div class="loading"><i class="spin"></i>Gemini가 「${title}」을 읽고 있어요. 긴 대화는 30초쯤 걸릴 수 있어요.</div>`;
+      card.innerHTML = r.progress
+        ? `<h2 class="card-title">${esc(c.name)} 설정 찾는 중… (${r.progress.at}/${r.progress.of})</h2>
+          <div class="loading"><i class="spin"></i>한 번에는 처리되지 않아서 조각으로 나눠 읽고 있어요. 막히는 조각은 건너뛰고, 나중에 직접 고를 수 있게 표시해 둘게요.</div>
+          <div class="progress"><i style="width:${Math.round((r.progress.at / r.progress.of) * 100)}%"></i></div>
+          <div class="btn-row"><button class="btn btn-sm btn-ghost" data-act="stop">여기까지만</button></div>`
+        : `<h2 class="card-title">${esc(c.name)} 설정 찾는 중…</h2><div class="loading"><i class="spin"></i>Gemini가 「${title}」을 읽고 있어요. 긴 대화는 30초쯤 걸릴 수 있어요.</div>`;
       return;
     }
     if (r.error) {
@@ -635,8 +745,12 @@
         <button class="btn btn-ghost" data-act="close-review">닫기</button></div>`;
       return;
     }
+    const blockedNote = r.blocked.length
+      ? `<div class="notice"><svg><use href="#i-alert"/></svg><p>Gemini가 처리하지 않은 부분이 <b>${r.blocked.length}곳</b> 있어요. 대화 읽기 화면에 빗금으로 표시해 뒀으니, 거기서 직접 골라 주세요.</p>
+          <button class="btn btn-sm" data-act="read-blocked"><svg><use href="#i-book"/></svg>그 부분 보기</button></div>`
+      : '';
     if (!r.items.length) {
-      card.innerHTML = `<h2 class="card-title">새로 찾은 설정이 없어요</h2><p class="lead">이 대화에서는 ${esc(c.name)}의 설정이 될 만한 내용을 찾지 못했어요. 직접 읽으면서 골라 볼까요?</p>
+      card.innerHTML = blockedNote + `<h2 class="card-title">새로 찾은 설정이 없어요</h2><p class="lead">이 대화에서는 ${esc(c.name)}의 설정이 될 만한 내용을 찾지 못했어요. 직접 읽으면서 골라 볼까요?</p>
         <div class="btn-row"><button class="btn" data-act="read"><svg><use href="#i-book"/></svg>읽으면서 직접 고르기</button>
         <button class="btn btn-ghost" data-act="close-review">닫기</button></div>`;
       return;
@@ -650,6 +764,7 @@
         <span class="hint">✨ 새 설정 ${kinds.new} · 재확인 ${kinds.same} · ⚠ 모순 ${kinds.conflict} — 「${title}」 · ${keyLabel(r.keyUsed)}</span></div>
         <button class="btn btn-sm btn-ghost" data-act="toggle-all">${on === r.items.length ? '모두 해제' : '모두 선택'}</button>
       </div>
+      ${blockedNote}
       ${r.items.map((it) => candCard(it, r.charId)).join('')}
       <div class="review-foot">
         <button class="btn btn-ghost" data-act="close-review">버리기</button>
@@ -707,6 +822,13 @@
     }
     if (act === 'retry') return runExtract(r.logId, r.charId);
     if (act === 'read') return openReader(r.logId);
+    if (act === 'read-blocked') return openReader(r.logId, null, true);
+    if (act === 'stop') {
+      r.cancel = true;
+      b.disabled = true;
+      b.textContent = '마무리하는 중…';
+      return;
+    }
     if (act === 'toggle-all') {
       const all = r.items.every((i) => i.on);
       r.items.forEach((i) => (i.on = !all));
@@ -754,18 +876,22 @@
   }
 
   /* ---------- reader: pick facts by selecting text ---------- */
-  function openReader(logId, quote) {
-    if (!N.state.logs[logId]) return toast('이 대화는 삭제됐어요', { err: true });
+  // quote: scroll to where this quote is used. toBlocked: scroll to the first part Gemini refused.
+  function openReader(logId, quote, toBlocked) {
+    const log = N.state.logs[logId];
+    if (!log) return toast('이 대화는 삭제됐어요', { err: true });
     view.readerLogId = logId;
     if (view.tab !== 'collect') setTab('collect');
     else renderReader();
     requestAnimationFrame(() => {
       let target = $('#readerCard');
-      if (quote) {
-        const m = $$('#reader mark').find((x) => U.norm(x.textContent) === U.norm(quote));
+      if (toBlocked) target = $('#reader .blk') || target;
+      else if (quote) {
+        const at = log.text.indexOf(quote);
+        const m = at >= 0 && $$('#reader mark[data-s]').find((x) => +x.dataset.s >= at && +x.dataset.s < at + quote.length);
         if (m) target = m;
       }
-      target.scrollIntoView({ behavior: 'smooth', block: quote ? 'center' : 'start' });
+      target.scrollIntoView({ behavior: 'smooth', block: target.id === 'readerCard' ? 'start' : 'center' });
     });
   }
 
@@ -779,26 +905,41 @@
     }
     card.hidden = false;
     $('#readerTitle').textContent = log.title;
-    // highlight every quote already used as evidence from this log
     const text = log.text;
-    const ranges = [];
+    // quotes already used as evidence from this log (overlaps: the first one wins)
+    const found = [];
     Object.values(N.state.facts).forEach((f) =>
       f.evidence.forEach((e) => {
         if (e.logId !== log.id || !e.quote) return;
         const at = text.indexOf(e.quote);
-        if (at >= 0) ranges.push({ s: at, e: at + e.quote.length, id: f.id, char: f.char });
+        if (at >= 0) found.push({ s: at, e: at + e.quote.length, id: f.id, char: f.char });
       })
     );
-    ranges.sort((a, b) => a.s - b.s || b.e - a.e);
-    let html = '';
-    let pos = 0;
-    ranges.forEach((r) => {
-      if (r.s < pos) return; // overlapping: keep the first
-      html += esc(text.slice(pos, r.s)) + `<mark class="${r.char === 'enju' ? 'e' : 'r'}" data-fact="${r.id}" title="저장된 설정으로 가기">${esc(text.slice(r.s, r.e))}</mark>`;
-      pos = r.e;
+    found.sort((a, b) => a.s - b.s || b.e - a.e);
+    const marks = [];
+    found.forEach((r) => {
+      if (!marks.length || r.s >= marks[marks.length - 1].e) marks.push(r);
     });
-    html += esc(text.slice(pos));
+    const blocked = log.blocked || [];
+    // cut the text wherever a highlight or a refused part starts or ends
+    const cuts = new Set([0, text.length]);
+    marks.concat(blocked).forEach((r) => {
+      cuts.add(Math.max(0, Math.min(text.length, r.s)));
+      cuts.add(Math.max(0, Math.min(text.length, r.e)));
+    });
+    const pts = Array.from(cuts).sort((a, b) => a - b);
+    let html = '';
+    for (let i = 0; i < pts.length - 1; i++) {
+      const a = pts[i];
+      const b = pts[i + 1];
+      let seg = esc(text.slice(a, b));
+      const m = marks.find((r) => r.s <= a && b <= r.e);
+      if (m) seg = `<mark class="${m.char === 'enju' ? 'e' : 'r'}" data-fact="${m.id}" data-s="${a}" title="저장된 설정으로 가기">${seg}</mark>`;
+      if (blocked.some((r) => r.s <= a && b <= r.e)) seg = `<span class="blk" title="Gemini가 처리하지 않은 부분 — 직접 골라 주세요">${seg}</span>`;
+      html += seg;
+    }
     $('#reader').innerHTML = html;
+    $('#readerBlockedHint').hidden = !blocked.length;
   }
   $('#btnCloseReader').addEventListener('click', () => {
     view.readerLogId = null;
@@ -888,7 +1029,7 @@
           .map(
             (l) => `<div class="log-item" data-id="${l.id}">
           <div class="log-main"><b>${l.private ? '🔒 ' : ''}${esc(l.title)}</b>
-            <span>${U.date(l.createdAt)} · ${l.text.length.toLocaleString()}자 · 근거 ${used[l.id] || 0}개${l.extractedAt ? '' : ' · AI 수집 전'}</span></div>
+            <span>${U.date(l.createdAt)} · ${l.text.length.toLocaleString()}자 · 근거 ${used[l.id] || 0}개${l.extractedAt ? '' : ' · AI 수집 전'}${l.blocked && l.blocked.length ? ` · ⚠ 직접 고를 부분 ${l.blocked.length}곳` : ''}</span></div>
           <div class="btn-row">
             <button class="btn btn-sm" data-act="read"><svg><use href="#i-book"/></svg>읽기</button>
             <button class="icon-btn" data-act="extract" title="AI로 다시 뽑기" aria-label="AI로 다시 뽑기"><svg><use href="#i-wand"/></svg></button>

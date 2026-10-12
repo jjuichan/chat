@@ -58,6 +58,7 @@
     { id: 'speech', label: '말버릇·호칭', hint: '말투 · 입버릇 · 부르는 이름' },
     { id: 'rel', label: '둘의 관계', hint: '서로에 대한 감정 · 둘만의 약속 · 함께한 일' },
     { id: 'people', label: '인간관계', hint: '가족 · 친구 · 동료' },
+    { id: 'adult', label: '🔞 은밀한 설정', hint: '성향 · 취향 · 둘만 아는 것 — 기본으로 가려져 있어요' },
     { id: 'etc', label: '기타', hint: '' },
   ];
   N.catLabel = (id, charId) => {
@@ -144,6 +145,7 @@
       changesSinceBackup: 0,
       backupSnooze: 0,
       tab: 'ritsu',
+      showAdult: false,
     },
     (() => {
       try {

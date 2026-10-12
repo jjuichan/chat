@@ -79,16 +79,27 @@
         schema ? { responseMimeType: 'application/json', responseSchema: schema } : {}
       ),
     }, keys);
-    if (data.promptFeedback && data.promptFeedback.blockReason)
-      throw new Error(`Gemini가 이 대화를 처리하지 않았어요 (${data.promptFeedback.blockReason}). 문제가 될 만한 부분을 빼고 다시 시도해 주세요.`);
+    // err.blocked: Google refused the content; err.tooLong: the answer was cut off.
+    // The collect screen reacts to both by splitting the log into smaller pieces.
+    if (data.promptFeedback && data.promptFeedback.blockReason) {
+      const err = new Error(`Gemini가 이 대화를 처리하지 않았어요 (${data.promptFeedback.blockReason}).`);
+      err.blocked = true;
+      throw err;
+    }
     const cand = (data.candidates || [])[0];
     const text = cand && cand.content ? (cand.content.parts || []).map((p) => p.text || '').join('') : '';
-    if (!text) {
-      const why = cand && cand.finishReason;
-      throw new Error(why === 'SAFETY' ? 'Gemini가 안전 필터 때문에 답하지 않았어요. 일부를 빼고 다시 시도해 주세요.' : '빈 응답이 왔어요. 다시 시도해 주세요.');
+    const why = cand && cand.finishReason;
+    if (/SAFETY|PROHIBITED|BLOCKLIST|SPII/.test(why || '')) {
+      const err = new Error(`Gemini가 안전 필터 때문에 답하지 않았어요 (${why}).`);
+      err.blocked = true;
+      throw err;
     }
-    if (cand.finishReason === 'MAX_TOKENS' && schema)
-      throw new Error('대화가 너무 길어서 결과가 잘렸어요. 대화를 두세 부분으로 나눠서 넣어 주세요.');
+    if (why === 'MAX_TOKENS' && schema) {
+      const err = new Error('대화가 너무 길어서 결과가 잘렸어요.');
+      err.tooLong = true;
+      throw err;
+    }
+    if (!text) throw new Error('빈 응답이 왔어요. 다시 시도해 주세요.');
     return text;
   }
 
@@ -131,6 +142,7 @@
         `2. 그 장면에서만의 일시적인 행동이나 기분(예: 지금 커피를 마심, 지금 화남)은 뽑지 마. 단, 반복되는 습관이나 성격을 보여주면 설정으로 정리해.`,
         `3. 로그에 근거가 없는 건 절대 추측하거나 지어내지 마.`,
         `4. ${other.name}에 대한 정보는 뽑지 마. 둘의 관계에 대한 것만 rel 카테고리로 뽑아.`,
+        `   성적인 취향·성향·스킨십 습관처럼 은밀한 설정은 adult 카테고리로 뽑아. 장면을 묘사하지 말고 설정만 담백하게 적어 (예: "목덜미에 약함").`,
         `5. fact는 한국어 한 문장, 60자 이내, 명사형이나 ‘~함’체로 간결하게 (예: "단 음식을 싫어함", "${other.name}를 둘이 있을 때만 이름으로 부름").`,
         `6. quote에는 근거가 된 부분을 로그에서 글자 그대로 복사해 넣어 (150자 이내). 바꾸거나 요약하지 마.`,
         `7. 이미 아는 설정 목록과 비교해서 relation을 정해:`,
