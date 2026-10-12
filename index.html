@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>ずうっと 발췌기 · Ritsu × Enju</title>
+  <meta name="description" content="AI 캐릭터 채팅을 편집하고 아름다운 이미지로 저장하는 발췌기 — ずうっといっしょ！" />
+  <meta name="theme-color" content="#F5F0EE" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='12' cy='16' r='8' fill='none' stroke='%23E68AA7' stroke-width='3'/%3E%3Ccircle cx='20' cy='16' r='8' fill='none' stroke='%23C8102E' stroke-width='3'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <link rel="stylesheet" href="css/app.css" />
+  <link rel="stylesheet" href="css/card.css" />
+</head>
+<body>
+  <!-- icon sprite -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-source" viewBox="0 0 24 24"><path d="M8 4h8M6 8h12M4 12h16M6 16h12M8 20h8"/></symbol>
+      <symbol id="i-blocks" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="2"/><rect x="4" y="14" width="16" height="6" rx="2"/></symbol>
+      <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="9" r="3.5"/><circle cx="16.5" cy="10" r="2.8"/><path d="M3 19c.8-3 3.2-4.5 6-4.5s5.2 1.5 6 4.5M15 14.6c2.6-.3 4.8 1 5.5 3.9"/></symbol>
+      <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.8-.8 1.8-1.7 0-1.2-1-1.5-1-2.6 0-1 .8-1.7 1.8-1.7H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"/><circle cx="7.5" cy="11" r="1.2"/><circle cx="10.5" cy="7" r="1.2"/><circle cx="15.5" cy="7.5" r="1.2"/></symbol>
+      <symbol id="i-type" viewBox="0 0 24 24"><path d="M4 7V5h12v2M10 5v14M7.5 19h5M14 13v-1.5h7V13M17.5 11.5V19M16 19h3"/></symbol>
+      <symbol id="i-info" viewBox="0 0 24 24"><path d="M5 4h10l4 4v12H5z"/><path d="M14 4v5h5M8.5 13h7M8.5 16.5h5"/></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/></symbol>
+      <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></symbol>
+      <symbol id="i-redo" viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+      <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M10 5.7c.6-.1 1.3-.2 2-.2 6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-2.4 3.2M6.3 7.1C3.9 8.8 2.5 12 2.5 12S6 18.5 12 18.5c1.7 0 3.2-.5 4.5-1.3M3 3l18 18M9.9 9.9a3 3 0 0 0 4.2 4.2"/></symbol>
+      <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.5c.5 4.6 3.9 8 8.5 8.5-4.6.5-8 3.9-8.5 8.5-.5-4.6-3.9-8-8.5-8.5 4.6-.5 8-3.9 8.5-8.5z"/></symbol>
+      <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18.5" cy="12" r="1.3"/></symbol>
+      <symbol id="i-grip" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.2"/><circle cx="15" cy="6" r="1.2"/><circle cx="9" cy="12" r="1.2"/><circle cx="15" cy="12" r="1.2"/><circle cx="9" cy="18" r="1.2"/><circle cx="15" cy="18" r="1.2"/></symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13M10 11v5.5M14 11v5.5"/></symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a2 2 0 0 0-2-2h-7.5a2 2 0 0 0-2 2v7.5a2 2 0 0 0 2 2h2.5"/></symbol>
+      <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
+      <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></symbol>
+      <symbol id="i-zoom-in" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.8-4.8M10.5 7.5v6M7.5 10.5h6"/></symbol>
+      <symbol id="i-zoom-out" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.8-4.8M7.5 10.5h6"/></symbol>
+      <symbol id="i-fit" viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></symbol>
+      <symbol id="i-marker" viewBox="0 0 24 24"><path d="m14.5 4.5 5 5L11 18H6v-5z"/><path d="M4 21h16"/></symbol>
+      <symbol id="i-bold" viewBox="0 0 24 24"><path d="M7 4.5h6a3.75 3.75 0 0 1 0 7.5H7zM7 12h7a3.75 3.75 0 0 1 0 7.5H7z"/></symbol>
+      <symbol id="i-underline" viewBox="0 0 24 24"><path d="M7 4v7a5 5 0 0 0 10 0V4M5 20h14"/></symbol>
+      <symbol id="i-small" viewBox="0 0 24 24"><path d="M4 18 8.5 7l4.5 11M5.7 14h5.6M15 18l2.5-6 2.5 6M15.8 16h3.4"/></symbol>
+      <symbol id="i-split" viewBox="0 0 24 24"><path d="M4 12h3M10 12h4M17 12h3M8 4h8v4H8zM8 16h8v4H8z"/></symbol>
+      <symbol id="i-merge" viewBox="0 0 24 24"><rect x="6" y="5" width="12" height="14" rx="2"/><path d="M9 9.5h6M9 12h6M9 14.5h4"/></symbol>
+      <symbol id="i-image" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.8"/><path d="m4 17.5 5-4.5 4 3.5 2.5-2 4.5 3.5"/></symbol>
+      <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V4M8 8l4-4 4 4M6 12v7h12v-7"/></symbol>
+      <symbol id="i-clip" viewBox="0 0 24 24"><rect x="6" y="5" width="12" height="16" rx="2"/><path d="M9 5V3.5h6V5M9 11h6M9 14.5h6"/></symbol>
+      <symbol id="i-save" viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/></symbol>
+      <symbol id="i-wand" viewBox="0 0 24 24"><path d="m4 20 11-11 2 2L6 22zM15 3v3M19.5 4.5l-2 2M21 9h-3M13 7.5 12 5"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+      <symbol id="i-divider" viewBox="0 0 24 24"><path d="M4 12h5M15 12h5"/><path d="M12 9.5c.2 1.3 1.2 2.3 2.5 2.5-1.3.2-2.3 1.2-2.5 2.5-.2-1.3-1.2-2.3-2.5-2.5 1.3-.2 2.3-1.2 2.5-2.5z"/></symbol>
+      <symbol id="i-quote" viewBox="0 0 24 24"><path d="M5 18c2.5-1 4-3 4-6.5V7H4.5v5H8M15 18c2.5-1 4-3 4-6.5V7h-4.5v5H18"/></symbol>
+      <symbol id="i-feather" viewBox="0 0 24 24"><path d="M20 4c-8 0-13 5-13 12v4M7 16h6c4 0 7-5 7-12M7 12h8"/></symbol>
+      <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3.5 6.5a2 2 0 0 1 2-2H10l2 2.5h6.5a2 2 0 0 1 2 2v8.5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/></symbol>
+      <symbol id="i-history" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7L4 8.5M4 4v4.5h4.5M12 8v4.5l3 2"/></symbol>
+      <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></symbol>
+    </defs>
+  </svg>
+
+  <div class="app" id="app">
+    <!-- ============ top bar ============ -->
+    <header class="topbar">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 44 32" aria-hidden="true">
+          <circle cx="16" cy="16" r="10.5" fill="none" stroke="var(--ritsu)" stroke-width="3"/>
+          <circle cx="28" cy="16" r="10.5" fill="none" stroke="var(--enju)" stroke-width="3"/>
+          <path d="M19.59 6.13A10.5 10.5 0 0 1 24.04 9.25" fill="none" stroke="var(--ritsu)" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+        <div class="brand-text">
+          <strong>ずうっと<span> 발췌기</span></strong>
+          <small><b class="c-r">Ritsu</b> × <b class="c-e">Enju</b> · excerpt studio</small>
+        </div>
+      </div>
+      <div class="top-actions">
+        <span class="save-state" id="saveState" title="편집 내용은 이 브라우저에 자동 저장됩니다"><i></i><span>자동 저장</span></span>
+        <div class="btn-group">
+          <button class="icon-btn" id="btnUndo" title="실행 취소 (Ctrl+Z)" aria-label="실행 취소"><svg><use href="#i-undo"/></svg></button>
+          <button class="icon-btn" id="btnRedo" title="다시 실행 (Ctrl+Shift+Z)" aria-label="다시 실행"><svg><use href="#i-redo"/></svg></button>
+        </div>
+        <button class="btn btn-brand" id="btnExport"><svg><use href="#i-download"/></svg><span>PNG 저장</span></button>
+      </div>
+    </header>
+
+    <div class="mobile-switch" role="tablist">
+      <button data-mview="edit" class="on"><svg><use href="#i-edit"/></svg>편집</button>
+      <button data-mview="preview"><svg><use href="#i-image"/></svg>미리보기</button>
+    </div>
+
+    <main class="workspace" id="workspace">
+      <!-- ============ tab rail ============ -->
+      <nav class="rail" id="rail" aria-label="편집 메뉴">
+        <button data-tab="source"><svg><use href="#i-source"/></svg><span>원문</span></button>
+        <button data-tab="blocks"><svg><use href="#i-blocks"/></svg><span>블록</span></button>
+        <button data-tab="speakers"><svg><use href="#i-users"/></svg><span>화자</span></button>
+        <button data-tab="design"><svg><use href="#i-palette"/></svg><span>디자인</span></button>
+        <button data-tab="type"><svg><use href="#i-type"/></svg><span>글자</span></button>
+        <button data-tab="info"><svg><use href="#i-info"/></svg><span>정보</span></button>
+        <button data-tab="save"><svg><use href="#i-save"/></svg><span>저장</span></button>
+      </nav>
+
+      <!-- ============ editor panel ============ -->
+      <section class="panel" id="panel">
+
+        <!-- 원문 -->
+        <div class="page" data-page="source">
+          <div class="page-head">
+            <h2>원문 붙여넣기</h2>
+            <p>AI 채팅 내용을 그대로 붙여넣으면 대사와 서술문을 자동으로 나눠 드려요.</p>
+          </div>
+          <textarea id="rawInput" class="raw" spellcheck="false" placeholder="*리츠는 창밖을 바라보았다.*&#10;&quot;오늘 날씨 좋다.&quot;&#10;&#10;엔쥬: 그러게. 산책 갈래?&#10;&#10;— 지원 형식 —&#10;· *별표* 로 감싼 문장 → 서술&#10;· &quot;따옴표&quot; 「괄호」 → 대사&#10;· 이름: 대사  /  [이름] 대사"></textarea>
+          <div class="field-grid">
+            <label class="field">
+              <span class="lbl">따옴표 밖 일반 문장</span>
+              <div class="seg" data-local="plainAs">
+                <button data-value="narration" class="on">서술문</button>
+                <button data-value="dialogue">대사</button>
+              </div>
+            </label>
+            <label class="field">
+              <span class="lbl">이름 없는 대사의 화자</span>
+              <div class="seg" data-local="guess">
+                <button data-value="mention" class="on">문맥 추측</button>
+                <button data-value="alternate">번갈아</button>
+                <button data-value="none">비워두기</button>
+              </div>
+            </label>
+          </div>
+          <div class="check-row">
+            <label class="check"><input type="checkbox" id="optStrip" checked /><span>대사의 따옴표 제거 (디자인에서 다시 붙여요)</span></label>
+            <label class="check"><input type="checkbox" id="optAst" checked /><span>*별표* 를 서술문으로 인식</span></label>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="btnParseReplace"><svg><use href="#i-wand"/></svg>블록으로 변환</button>
+            <button class="btn" id="btnParseAppend"><svg><use href="#i-plus"/></svg>기존 블록 뒤에 추가</button>
+          </div>
+          <div class="note">
+            <b>Tip.</b> 화자 이름 인식은 <a href="#" data-goto="speakers">화자</a> 탭의 ‘인식할 이름’을 사용해요. <code>{{user}}</code>, 닉네임 등을 추가해 두면 정확도가 올라가요. 추측으로 지정된 대사에는 <span class="pill-guess">추측</span> 표시가 붙어요.
+          </div>
+        </div>
+
+        <!-- 블록 -->
+        <div class="page" data-page="blocks">
+          <div class="page-head row">
+            <div>
+              <h2>발췌 블록</h2>
+              <p id="blockStats">—</p>
+            </div>
+            <div class="add-row">
+              <button class="btn btn-sm" data-add="narration"><svg><use href="#i-feather"/></svg>서술</button>
+              <button class="btn btn-sm" data-add="dialogue"><svg><use href="#i-quote"/></svg>대사</button>
+              <button class="btn btn-sm" data-add="divider" title="구분선"><svg><use href="#i-divider"/></svg></button>
+            </div>
+          </div>
+          <div class="fmt-bar" id="fmtBar">
+            <button data-fmt="mark" title="형광펜 강조  ==문장=="><svg><use href="#i-marker"/></svg><span>강조</span></button>
+            <button data-fmt="bold" title="굵게  **문장**"><svg><use href="#i-bold"/></svg></button>
+            <button data-fmt="under" title="밑줄  __문장__"><svg><use href="#i-underline"/></svg></button>
+            <button data-fmt="small" title="작은 글씨  ~~문장~~"><svg><use href="#i-small"/></svg></button>
+            <span class="sep"></span>
+            <button data-fmt="split" title="커서 위치에서 블록 나누기"><svg><use href="#i-split"/></svg><span>나누기</span></button>
+            <button data-fmt="merge" title="위 블록과 합치기"><svg><use href="#i-merge"/></svg><span>합치기</span></button>
+            <span class="fmt-hint" id="fmtHint">문장을 선택한 뒤 눌러 주세요</span>
+          </div>
+          <div class="block-list" id="blockList"></div>
+          <div class="list-foot">
+            <button class="btn btn-ghost btn-sm" id="btnShowAll"><svg><use href="#i-eye"/></svg>숨긴 블록 모두 표시</button>
+            <button class="btn btn-ghost btn-sm" id="btnDropHidden"><svg><use href="#i-trash"/></svg>숨긴 블록 삭제</button>
+            <button class="btn btn-ghost btn-sm danger" id="btnClearBlocks"><svg><use href="#i-x"/></svg>전체 비우기</button>
+          </div>
+        </div>
+
+        <!-- 화자 -->
+        <div class="page" data-page="speakers">
+          <div class="page-head row">
+            <div>
+              <h2>화자</h2>
+              <p>이름 표기, 색상, 말풍선 위치, 아이콘을 화자별로 설정해요.</p>
+            </div>
+            <button class="btn btn-sm" id="btnAddSpeaker"><svg><use href="#i-plus"/></svg>화자 추가</button>
+          </div>
+          <div id="speakerList" class="speaker-list"></div>
+        </div>
+
+        <!-- 디자인 -->
+        <div class="page" data-page="design">
+          <div class="page-head">
+            <h2>디자인</h2>
+            <p>프리셋을 고른 뒤 세부 항목을 자유롭게 바꿔 보세요.</p>
+          </div>
+
+          <details class="sec" open data-sec="preset">
+            <summary>프리셋</summary>
+            <div class="preset-grid" id="presetGrid"></div>
+            <div id="myPresetWrap" class="my-preset-wrap"></div>
+          </details>
+
+          <details class="sec" open data-sec="layout">
+            <summary>레이아웃</summary>
+            <div class="field">
+              <span class="lbl">구성 방식</span>
+              <div class="seg seg-cards" data-bind="style.layout">
+                <button data-value="novel"><b>소설</b><small>이름 + 문단</small></button>
+                <button data-value="script"><b>대본</b><small>이름 열 정렬</small></button>
+                <button data-value="bubble"><b>메신저</b><small>말풍선</small></button>
+              </div>
+            </div>
+            <div class="field-grid">
+              <label class="field" data-show="style.layout=novel">
+                <span class="lbl">이름 위치</span>
+                <div class="seg" data-bind="style.names.position">
+                  <button data-value="above">위</button>
+                  <button data-value="inline">앞</button>
+                  <button data-value="hidden">숨김</button>
+                </div>
+              </label>
+              <label class="field">
+                <span class="lbl">이름 모양</span>
+                <select data-bind="style.names.style">
+                  <option value="text">색 글씨</option>
+                  <option value="pill">알약 라벨</option>
+                  <option value="underline">밑줄</option>
+                  <option value="dot">점 + 이름</option>
+                  <option value="bracket">[대괄호]</option>
+                </select>
+              </label>
+              <label class="field">
+                <span class="lbl">대사 따옴표</span>
+                <select data-bind="style.quotes">
+                  <option value="“”">“ 큰따옴표 ”</option>
+                  <option value="‘’">‘ 작은따옴표 ’</option>
+                  <option value="「」">「 낫표 」</option>
+                  <option value="『』">『 겹낫표 』</option>
+                  <option value="&quot;">" 직선 "</option>
+                  <option value="none">없음</option>
+                </select>
+              </label>
+              <label class="field" data-show="style.layout=novel">
+                <span class="lbl">이름 옆 아이콘</span>
+                <label class="switch"><input type="checkbox" data-bind="style.names.avatar" /><i></i><span>표시</span></label>
+              </label>
+              <label class="field" data-show="style.layout=bubble">
+                <span class="lbl">프로필 아이콘</span>
+                <label class="switch"><input type="checkbox" data-bind="style.bubble.avatar" /><i></i><span>표시</span></label>
+              </label>
+            </div>
+            <div class="field-grid" data-show="style.layout=bubble">
+              <label class="field range"><span class="lbl">말풍선 둥글기 <output></output></span><input type="range" min="2" max="28" step="1" data-bind="style.bubble.radius" data-unit="px" /></label>
+              <label class="field range"><span class="lbl">말풍선 최대 폭 <output></output></span><input type="range" min="50" max="95" step="1" data-bind="style.bubble.maxWidth" data-unit="%" /></label>
+            </div>
+          </details>
+
+          <details class="sec" open data-sec="canvas">
+            <summary>이미지 크기</summary>
+            <div class="field">
+              <span class="lbl">너비</span>
+              <div class="seg" data-bind="style.width" data-num>
+                <button data-value="540">540</button>
+                <button data-value="640">640</button>
+                <button data-value="720">720</button>
+                <button data-value="860">860</button>
+                <button data-value="1080">1080</button>
+              </div>
+            </div>
+            <label class="field range"><span class="lbl">너비 직접 조절 <output></output></span><input type="range" min="360" max="1400" step="10" data-bind="style.width" data-unit="px" /></label>
+            <div class="field">
+              <span class="lbl">비율 <em class="hint">내용이 길면 자동으로 늘어나 잘리지 않아요</em></span>
+              <div class="seg seg-wrap" data-bind="style.ratio">
+                <button data-value="auto">자동 높이</button>
+                <button data-value="1:1">1:1</button>
+                <button data-value="4:5">4:5</button>
+                <button data-value="3:4">3:4</button>
+                <button data-value="2:3">2:3</button>
+                <button data-value="9:16">9:16</button>
+                <button data-value="16:9">16:9</button>
+              </div>
+            </div>
+          </details>
+
+          <details class="sec" data-sec="bg">
+            <summary>배경</summary>
+            <div class="field">
+              <span class="lbl">채우기</span>
+              <div class="seg" data-bind="style.bg.type">
+                <button data-value="solid">단색</button>
+                <button data-value="gradient">그라데이션</button>
+              </div>
+            </div>
+            <div class="field-grid">
+              <label class="field color"><span class="lbl">배경색</span><input type="color" data-bind="style.bg.color" /></label>
+              <label class="field color" data-show="style.bg.type=gradient"><span class="lbl">두 번째 색</span><input type="color" data-bind="style.bg.color2" /></label>
+            </div>
+            <label class="field range" data-show="style.bg.type=gradient"><span class="lbl">그라데이션 각도 <output></output></span><input type="range" min="0" max="360" step="5" data-bind="style.bg.angle" data-unit="°" /></label>
+            <div class="field">
+              <span class="lbl">패턴</span>
+              <div class="pattern-grid seg" data-bind="style.bg.pattern">
+                <button data-value="none"><i class="pt pt-none"></i>없음</button>
+                <button data-value="dots"><i class="pt pt-dots"></i>도트</button>
+                <button data-value="grid"><i class="pt pt-grid"></i>모눈</button>
+                <button data-value="lines"><i class="pt pt-lines"></i>줄노트</button>
+                <button data-value="gingham"><i class="pt pt-gingham"></i>깅엄</button>
+                <button data-value="stripe"><i class="pt pt-stripe"></i>사선</button>
+                <button data-value="hearts"><i class="pt pt-hearts"></i>하트</button>
+                <button data-value="stars"><i class="pt pt-stars"></i>별</button>
+              </div>
+            </div>
+            <div class="field-grid" data-hide="style.bg.pattern=none">
+              <label class="field color"><span class="lbl">패턴 색</span><input type="color" data-bind="style.bg.patternColor" /></label>
+              <label class="field range"><span class="lbl">패턴 진하기 <output></output></span><input type="range" min="0.02" max="1" step="0.01" data-bind="style.bg.patternOpacity" data-unit="%" /></label>
+              <label class="field range"><span class="lbl">패턴 크기 <output></output></span><input type="range" min="0.5" max="2.5" step="0.1" data-bind="style.bg.patternScale" data-unit="x" /></label>
+            </div>
+            <label class="switch"><input type="checkbox" data-bind="style.bg.noise" /><i></i><span>종이 질감 (노이즈)</span></label>
+            <div class="field">
+              <span class="lbl">배경 이미지</span>
+              <div class="upload-row">
+                <label class="btn btn-sm"><svg><use href="#i-image"/></svg>이미지 선택<input type="file" accept="image/*" id="bgImageInput" hidden /></label>
+                <button class="btn btn-sm btn-ghost" id="bgImageClear">제거</button>
+                <span class="hint" id="bgImageInfo"></span>
+              </div>
+            </div>
+            <label class="field range" data-hide="style.bg.image="><span class="lbl">이미지 진하기 <output></output></span><input type="range" min="0.05" max="1" step="0.01" data-bind="style.bg.imageOpacity" data-unit="%" /></label>
+          </details>
+
+          <details class="sec" data-sec="panel">
+            <summary>본문 패널 · 여백 · 테두리</summary>
+            <label class="switch"><input type="checkbox" data-bind="style.panel.on" /><i></i><span>본문을 패널(카드) 위에 올리기</span></label>
+            <div class="field-grid">
+              <label class="field range"><span class="lbl">바깥 여백 <output></output></span><input type="range" min="0" max="140" step="2" data-bind="style.panel.margin" data-unit="px" /></label>
+              <label class="field range" data-show="style.panel.on=true"><span class="lbl">안쪽 여백 <output></output></span><input type="range" min="12" max="110" step="2" data-bind="style.panel.padding" data-unit="px" /></label>
+            </div>
+            <div class="field-grid" data-show="style.panel.on=true">
+              <label class="field color"><span class="lbl">패널 색</span><input type="color" data-bind="style.panel.color" /></label>
+              <label class="field range"><span class="lbl">불투명도 <output></output></span><input type="range" min="0" max="1" step="0.01" data-bind="style.panel.opacity" data-unit="%" /></label>
+              <label class="field range"><span class="lbl">모서리 둥글기 <output></output></span><input type="range" min="0" max="48" step="1" data-bind="style.panel.radius" data-unit="px" /></label>
+              <label class="field range"><span class="lbl">그림자 <output></output></span><input type="range" min="0" max="1" step="0.01" data-bind="style.panel.shadow" data-unit="%" /></label>
+              <label class="field range"><span class="lbl">테두리 두께 <output></output></span><input type="range" min="0" max="8" step="1" data-bind="style.panel.borderWidth" data-unit="px" /></label>
+              <label class="field color"><span class="lbl">테두리 색</span><input type="color" data-bind="style.panel.borderColor" /></label>
+              <label class="field">
+                <span class="lbl">테두리 모양</span>
+                <select data-bind="style.panel.borderStyle">
+                  <option value="solid">실선</option>
+                  <option value="dashed">점선</option>
+                  <option value="dotted">도트</option>
+                  <option value="double">이중선</option>
+                </select>
+              </label>
+            </div>
+          </details>
+
+          <details class="sec" data-sec="deco">
+            <summary>장식</summary>
+            <div class="field-grid">
+              <label class="field color"><span class="lbl">장식 색 1 <em class="hint">리츠</em></span><input type="color" data-bind="style.deco.color1" /></label>
+              <label class="field color"><span class="lbl">장식 색 2 <em class="hint">엔쥬</em></span><input type="color" data-bind="style.deco.color2" /></label>
+            </div>
+            <div class="field">
+              <span class="lbl">제목 장식</span>
+              <div class="seg seg-wrap" data-bind="style.deco.ornament">
+                <button data-value="none">없음</button>
+                <button data-value="twist">두 가닥 실</button>
+                <button data-value="dots">세 점</button>
+                <button data-value="line">가는 선</button>
+                <button data-value="hearts">하트</button>
+                <button data-value="star">별빛</button>
+              </div>
+            </div>
+            <div class="field">
+              <span class="lbl">구분선 모양</span>
+              <div class="seg seg-wrap" data-bind="style.divider">
+                <button data-value="twist">두 가닥 실</button>
+                <button data-value="dots">세 점</button>
+                <button data-value="line">가는 선</button>
+                <button data-value="hearts">하트</button>
+                <button data-value="star">별빛</button>
+              </div>
+            </div>
+            <div class="field-grid">
+              <label class="field">
+                <span class="lbl">모서리</span>
+                <select data-bind="style.deco.corners">
+                  <option value="none">없음</option>
+                  <option value="bracket">각진 브래킷</option>
+                  <option value="flourish">곡선 장식</option>
+                  <option value="tape">마스킹 테이프</option>
+                </select>
+              </label>
+              <label class="field">
+                <span class="lbl">흩뿌리기</span>
+                <select data-bind="style.deco.scatter">
+                  <option value="none">없음</option>
+                  <option value="sparkle">반짝이</option>
+                  <option value="heart">하트</option>
+                  <option value="petal">꽃잎</option>
+                </select>
+              </label>
+              <label class="field">
+                <span class="lbl">옆선</span>
+                <select data-bind="style.deco.side">
+                  <option value="none">없음</option>
+                  <option value="thread">얽힌 붉은 실</option>
+                </select>
+              </label>
+              <label class="field">
+                <span class="lbl">커플 도장</span>
+                <label class="switch"><input type="checkbox" data-bind="style.deco.stamp" /><i></i><span>표시</span></label>
+              </label>
+            </div>
+          </details>
+        </div>
+
+        <!-- 글자 -->
+        <div class="page" data-page="type">
+          <div class="page-head">
+            <h2>글자 · 간격</h2>
+            <p>글꼴과 크기, 행간, 강조 방식을 조절해요.</p>
+          </div>
+          <details class="sec" open data-sec="fonts">
+            <summary>글꼴</summary>
+            <div class="field-grid">
+              <label class="field"><span class="lbl">본문 (대사)</span><select data-bind="style.font.body" data-fonts></select></label>
+              <label class="field"><span class="lbl">서술문</span><select data-bind="style.font.narr" data-fonts data-same="본문과 같게"></select></label>
+              <label class="field"><span class="lbl">화자 이름</span><select data-bind="style.font.name" data-fonts></select></label>
+              <label class="field"><span class="lbl">제목 · 부제</span><select data-bind="style.font.title" data-fonts></select></label>
+            </div>
+          </details>
+          <details class="sec" open data-sec="size">
+            <summary>크기 · 간격</summary>
+            <div class="field-grid">
+              <label class="field range"><span class="lbl">글자 크기 <output></output></span><input type="range" min="11" max="30" step="1" data-bind="style.font.size" data-unit="px" /></label>
+              <label class="field range"><span class="lbl">행간 <output></output></span><input type="range" min="1.2" max="2.8" step="0.05" data-bind="style.font.lineHeight" /></label>
+              <label class="field range"><span class="lbl">자간 <output></output></span><input type="range" min="-0.06" max="0.2" step="0.005" data-bind="style.font.letterSpacing" data-unit="em" /></label>
+              <label class="field range"><span class="lbl">문단 간격 <output></output></span><input type="range" min="0" max="48" step="1" data-bind="style.font.gap" data-unit="px" /></label>
+              <label class="field range"><span class="lbl">제목 크기 <output></output></span><input type="range" min="14" max="56" step="1" data-bind="style.head.titleSize" data-unit="px" /></label>
+              <label class="field range"><span class="lbl">이름 크기 <output></output></span><input type="range" min="0.6" max="1.4" step="0.02" data-bind="style.names.scale" data-unit="x" /></label>
+            </div>
+          </details>
+          <details class="sec" open data-sec="colors">
+            <summary>글자색</summary>
+            <div class="field-grid cols-3">
+              <label class="field color"><span class="lbl">대사</span><input type="color" data-bind="style.color.text" /></label>
+              <label class="field color"><span class="lbl">서술문</span><input type="color" data-bind="style.color.narr" /></label>
+              <label class="field color"><span class="lbl">제목</span><input type="color" data-bind="style.color.title" /></label>
+              <label class="field color"><span class="lbl">포인트</span><input type="color" data-bind="style.color.accent" /></label>
+              <label class="field color"><span class="lbl">보조 (날짜 등)</span><input type="color" data-bind="style.color.muted" /></label>
+            </div>
+            <p class="hint">화자별 대사 색은 <a href="#" data-goto="speakers">화자</a> 탭에서 따로 정할 수 있어요.</p>
+          </details>
+          <details class="sec" open data-sec="narr">
+            <summary>서술문</summary>
+            <div class="field-grid">
+              <label class="field">
+                <span class="lbl">정렬</span>
+                <div class="seg" data-bind="style.narr.align">
+                  <button data-value="left">왼쪽</button>
+                  <button data-value="center">가운데</button>
+                  <button data-value="justify">양쪽</button>
+                </div>
+              </label>
+              <label class="field range"><span class="lbl">크기 비율 <output></output></span><input type="range" min="0.75" max="1.25" step="0.01" data-bind="style.narr.scale" data-unit="x" /></label>
+            </div>
+            <div class="check-row">
+              <label class="switch"><input type="checkbox" data-bind="style.narr.italic" /><i></i><span>기울임</span></label>
+              <label class="switch"><input type="checkbox" data-bind="style.narr.indent" /><i></i><span>첫 줄 들여쓰기</span></label>
+            </div>
+          </details>
+          <details class="sec" open data-sec="emph">
+            <summary>강조</summary>
+            <div class="field">
+              <span class="lbl">문장 강조 <code>==문장==</code></span>
+              <div class="seg" data-bind="style.emph.mark">
+                <button data-value="marker">형광펜</button>
+                <button data-value="full">배경</button>
+                <button data-value="underline">밑줄</button>
+                <button data-value="color">색 글씨</button>
+              </div>
+            </div>
+            <label class="field color inline"><span class="lbl">강조 색</span><input type="color" data-bind="style.emph.markColor" /></label>
+            <div class="field">
+              <span class="lbl">블록 강조 <em class="hint">블록의 ★ 버튼</em></span>
+              <div class="seg" data-bind="style.emph.block">
+                <button data-value="bar">세로 막대</button>
+                <button data-value="box">상자</button>
+                <button data-value="big">크게</button>
+                <button data-value="none">없음</button>
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <!-- 정보 -->
+        <div class="page" data-page="info">
+          <div class="page-head">
+            <h2>제목 · 날짜 · 코멘트</h2>
+            <p>체크를 끄면 이미지에서 숨겨져요.</p>
+          </div>
+          <div class="info-field">
+            <label class="check"><input type="checkbox" data-bind="meta.showSubtitle" /><span>부제 · 커플명</span></label>
+            <input type="text" data-bind="meta.subtitle" placeholder="ずうっといっしょ！" />
+          </div>
+          <div class="info-field">
+            <label class="check"><input type="checkbox" data-bind="meta.showTitle" /><span>제목</span></label>
+            <input type="text" data-bind="meta.title" placeholder="제목" />
+          </div>
+          <div class="info-field">
+            <label class="check"><input type="checkbox" data-bind="meta.showDate" /><span>날짜</span></label>
+            <div class="input-row"><input type="text" data-bind="meta.date" placeholder="2026.10.12" /><button class="btn btn-sm" id="btnToday">오늘</button></div>
+          </div>
+          <div class="info-field">
+            <label class="check"><input type="checkbox" data-bind="meta.showComment" /><span>코멘트</span></label>
+            <textarea rows="3" data-bind="meta.comment" placeholder="발췌에 덧붙일 한마디 (==강조== 사용 가능)"></textarea>
+          </div>
+          <div class="info-field">
+            <label class="check"><input type="checkbox" data-bind="meta.showFooter" /><span>하단 서명</span></label>
+            <input type="text" data-bind="meta.footer" placeholder="Ritsu × Enju" />
+          </div>
+          <div class="field-grid">
+            <label class="field">
+              <span class="lbl">제목 정렬</span>
+              <div class="seg" data-bind="style.head.align">
+                <button data-value="left">왼쪽</button>
+                <button data-value="center">가운데</button>
+                <button data-value="right">오른쪽</button>
+              </div>
+            </label>
+            <label class="field">
+              <span class="lbl">서명 정렬</span>
+              <div class="seg" data-bind="style.foot.align">
+                <button data-value="left">왼쪽</button>
+                <button data-value="center">가운데</button>
+                <button data-value="right">오른쪽</button>
+              </div>
+            </label>
+          </div>
+          <div class="field">
+            <span class="lbl">커플 도장 문구 <em class="hint">디자인 › 장식 › 커플 도장</em></span>
+            <div class="input-row"><input type="text" data-bind="meta.stampTop" placeholder="ずうっと" /><input type="text" data-bind="meta.stampBottom" placeholder="いっしょ" /></div>
+          </div>
+        </div>
+
+        <!-- 저장 -->
+        <div class="page" data-page="save">
+          <div class="page-head">
+            <h2>이미지 저장</h2>
+            <p id="exportInfo">—</p>
+          </div>
+          <div class="field">
+            <span class="lbl">해상도 <em class="hint">높을수록 선명하고 파일이 커져요</em></span>
+            <div class="seg" data-bind="export.scale" data-num>
+              <button data-value="1">1×</button>
+              <button data-value="2">2×</button>
+              <button data-value="3">3× 고화질</button>
+              <button data-value="4">4×</button>
+            </div>
+          </div>
+          <label class="field"><span class="lbl">파일 이름</span><input type="text" id="fileName" placeholder="자동 (제목_날짜)" /></label>
+          <div class="btn-col">
+            <button class="btn btn-brand btn-lg" id="btnExport2"><svg><use href="#i-download"/></svg>PNG 다운로드</button>
+            <div class="btn-row">
+              <button class="btn" id="btnCopyImg"><svg><use href="#i-clip"/></svg>클립보드에 복사</button>
+              <button class="btn" id="btnShare"><svg><use href="#i-share"/></svg>공유 · 사진에 저장</button>
+            </div>
+          </div>
+
+          <div class="divider-h"></div>
+          <div class="page-head small">
+            <h2>내 디자인 프리셋</h2>
+            <p>현재 디자인(색·글꼴·레이아웃·화자 색)을 이름 붙여 저장해요.</p>
+          </div>
+          <div class="input-row">
+            <input type="text" id="presetName" placeholder="예) 엔쥬 생일 버전" />
+            <button class="btn" id="btnSavePreset"><svg><use href="#i-save"/></svg>저장</button>
+          </div>
+          <div id="myPresetList" class="mini-list"></div>
+
+          <div class="divider-h"></div>
+          <div class="page-head small">
+            <h2>작업 파일</h2>
+            <p>편집 내용은 이 브라우저에 자동 저장돼요. 다른 기기로 옮기거나 백업하려면 파일로 내보내세요.</p>
+          </div>
+          <div class="btn-row wrap">
+            <button class="btn" id="btnBackup"><svg><use href="#i-download"/></svg>작업 파일 내보내기 (.json)</button>
+            <label class="btn"><svg><use href="#i-folder"/></svg>불러오기<input type="file" accept="application/json,.json" id="importInput" hidden /></label>
+            <button class="btn btn-ghost danger" id="btnNewDoc"><svg><use href="#i-plus"/></svg>새 발췌 시작</button>
+          </div>
+          <div class="page-head small">
+            <h2><svg class="ic"><use href="#i-history"/></svg> 복원 지점</h2>
+            <p>변환·불러오기·새로 시작하기 직전 상태가 자동으로 보관돼요.</p>
+          </div>
+          <div id="snapshotList" class="mini-list"></div>
+        </div>
+      </section>
+
+      <!-- ============ preview stage ============ -->
+      <section class="stage" id="stage">
+        <div class="stage-bar">
+          <div class="zoom">
+            <button class="icon-btn sm" id="zoomOut" aria-label="축소"><svg><use href="#i-zoom-out"/></svg></button>
+            <button class="zoom-val" id="zoomVal" title="맞춤 / 100% 전환">100%</button>
+            <button class="icon-btn sm" id="zoomIn" aria-label="확대"><svg><use href="#i-zoom-in"/></svg></button>
+            <button class="icon-btn sm" id="zoomFit" title="화면에 맞추기" aria-label="화면에 맞추기"><svg><use href="#i-fit"/></svg></button>
+          </div>
+          <span class="dim" id="dimInfo">—</span>
+        </div>
+        <div class="stage-scroll" id="stageScroll">
+          <div class="stage-sizer" id="stageSizer">
+            <div class="card-scaler" id="cardScaler">
+              <div id="card"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- block "more" menu -->
+  <div class="menu" id="blockMenu" role="menu" hidden>
+    <button data-m="up"><svg><use href="#i-up"/></svg>위로 이동</button>
+    <button data-m="down"><svg><use href="#i-down"/></svg>아래로 이동</button>
+    <button data-m="addAbove"><svg><use href="#i-plus"/></svg>위에 블록 추가</button>
+    <button data-m="addBelow"><svg><use href="#i-plus"/></svg>아래에 블록 추가</button>
+    <button data-m="dup"><svg><use href="#i-copy"/></svg>복제</button>
+    <button data-m="merge"><svg><use href="#i-merge"/></svg>위 블록과 합치기</button>
+    <div class="menu-gap">
+      <span>아래 간격</span>
+      <button data-m="gapMinus" aria-label="간격 줄이기">−</button>
+      <b id="menuGap">기본</b>
+      <button data-m="gapPlus" aria-label="간격 늘리기">+</button>
+    </div>
+    <button data-m="del" class="danger"><svg><use href="#i-trash"/></svg>삭제</button>
+  </div>
+
+  <div class="export-overlay" id="exportOverlay" hidden>
+    <div class="export-box">
+      <div class="spinner"><i></i><i></i></div>
+      <p id="exportMsg">이미지를 만드는 중…</p>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="vendor/html-to-image.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/fonts.js"></script>
+  <script src="js/presets.js"></script>
+  <script src="js/parser.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/editor.js"></script>
+  <script src="js/panels.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
