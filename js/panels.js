@@ -117,28 +117,33 @@
   };
 
   /* ---------- tabs ---------- */
+  // "source" and "info" now live inside the 본문 tab as collapsible sections
+  const SECTION_OF = { source: 'srcSec', info: 'infoSec' };
   App.setTab = function (tab) {
+    let open = null;
+    if (SECTION_OF[tab]) {
+      open = SECTION_OF[tab];
+      tab = 'blocks';
+    }
+    if (!$(`.page[data-page="${tab}"]`)) tab = 'blocks';
     if (App.ui.tab !== tab) $('#panel').scrollTop = 0;
     App.ui.tab = tab;
     $$('#rail button').forEach((b) => b.classList.toggle('on', b.dataset.tab === tab));
     $$('.page').forEach((p) => p.classList.toggle('on', p.dataset.page === tab));
     App.saveUI();
-    if (App.ui.mobileView === 'preview' && window.matchMedia('(max-width: 900px)').matches) App.setMobileView('edit');
+    if (open) {
+      const d = $('#' + open);
+      d.open = true;
+      requestAnimationFrame(() => d.scrollIntoView({ block: 'start', behavior: 'smooth' }));
+    }
     if (tab === 'blocks') requestAnimationFrame(() => $$('.bk-text').forEach((t) => ((t.style.height = 'auto'), (t.style.height = t.scrollHeight + 'px'))));
     if (tab === 'save') App.emit('dims');
-  };
-  App.setMobileView = function (v) {
-    App.ui.mobileView = v;
-    $('#workspace').dataset.mview = v;
-    $$('.mobile-switch button').forEach((b) => b.classList.toggle('on', b.dataset.mview === v));
-    App.saveUI();
-    if (v === 'preview') App.emit('fit');
   };
 
   /* ---------- source page ---------- */
   function initSource() {
     const raw = $('#rawInput');
-    raw.value = App.store.read('zutto-excerpt:raw:v1', '') || '';
+    raw.value = App.store.read('zutto-excerpt:raw:v1', null) ?? App.SAMPLE_RAW;
     raw.addEventListener(
       'input',
       U.debounce(() => App.store.write('zutto-excerpt:raw:v1', raw.value), 400)
@@ -160,6 +165,8 @@
       const g = out.filter((b) => b.guessed).length;
       App.toast(`${out.length}개 블록 (대사 ${d} · 서술 ${out.length - d})${g ? ` — 추측 화자 ${g}개를 확인해 주세요` : ''}`, 'ok', 3600);
       App.setTab('blocks');
+      $('#srcSec').open = false;
+      requestAnimationFrame(() => $('.list-head').scrollIntoView({ block: 'start', behavior: 'smooth' }));
     };
     $('#btnParseReplace').addEventListener('click', () => run(false));
     $('#btnParseAppend').addEventListener('click', () => run(true));
@@ -519,7 +526,6 @@
     initPresets();
     initProject();
     $$('#rail button').forEach((b) => b.addEventListener('click', () => App.setTab(b.dataset.tab)));
-    $$('.mobile-switch button').forEach((b) => b.addEventListener('click', () => App.setMobileView(b.dataset.mview)));
     document.addEventListener('click', (e) => {
       const g = e.target.closest('[data-goto]');
       if (g) {

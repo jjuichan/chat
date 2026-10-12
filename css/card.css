@@ -82,9 +82,9 @@
 
 /* body */
 .xc-body { display: flex; flex-direction: column; }
-.xb.turn { margin-top: calc(var(--gap) * .45); }
-.xb { margin-bottom: var(--gap); }
-.xb:last-child { margin-bottom: 0; }
+.xc .xb.turn { margin-top: calc(var(--gap) * .45); }
+.xc .xb { margin-bottom: var(--gap); }
+.xc .xb:last-child { margin-bottom: 0; }
 .xb-narr {
   color: var(--narr); font-family: var(--f-narr); font-size: var(--fs-narr);
   font-style: var(--narr-style); text-align: var(--narr-align); text-indent: var(--narr-indent);
@@ -105,6 +105,15 @@
 .ns-dot .nd { display: block; width: 7px; height: 7px; border-radius: 50%; background: var(--sp-name); }
 .xb-head { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
 .xb-head .xb-av { width: 26px; height: 26px; font-size: var(--fs-small); }
+
+/* novel: how dialogue stands apart from narration */
+.ly-novel.ds-bar .xb-dlg { border-left: 3px solid var(--sp-name); padding: 1px 0 1px 16px; }
+.ly-novel.ds-tint .xb-dlg { background: var(--sp-soft); border-radius: 8px; padding: 12px 18px; }
+.ly-novel.ds-center .xb-dlg { text-align: center; padding: 6px 0; }
+.ly-novel.ds-center .xb-dlg .xb-head { justify-content: center; }
+.ly-novel.ds-bar .xb-dlg .xb-text, .ly-novel.ds-tint .xb-dlg .xb-text, .ly-novel.ds-center .xb-dlg .xb-text { font-weight: 600; }
+.ly-novel.ds-bar.eb-bar .xb-dlg.is-emph { border-left-width: 5px; }
+.ly-novel.ds-tint.eb-box .xb-dlg.is-emph { box-shadow: inset 0 0 0 1.5px var(--sp-name); }
 
 /* novel: inline names */
 .np-inline .xb-dlg .xb-name { margin-right: .7em; }

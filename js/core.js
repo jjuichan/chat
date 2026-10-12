@@ -107,7 +107,7 @@
     KEY_UI,
   });
 
-  App.ui = Object.assign({ tab: 'blocks', zoom: 'fit', mobileView: 'edit', open: {} }, store.read(KEY_UI, {}));
+  App.ui = Object.assign({ tab: 'blocks', zoom: 'fit', open: { source: false, info: false } }, store.read(KEY_UI, {}));
   App.saveUI = U.debounce(() => store.write(KEY_UI, App.ui), 300);
 
   /* ---------- state ---------- */
@@ -124,7 +124,9 @@
 
   App.load = function () {
     const saved = store.read(KEY, null);
-    App.state = saved ? App.normalize(saved) : App.defaultDoc();
+    // the first release's untouched sample is replaced by the new default
+    const oldSample = saved && (saved.version || 1) < 2 && saved.meta && saved.meta.title === '내일도, 그 다음 날도' && (saved.blocks || []).length === 8;
+    App.state = saved && !oldSample ? App.normalize(saved) : App.defaultDoc();
   };
 
   App.speaker = (id) => App.state.speakers.find((s) => s.id === id) || null;

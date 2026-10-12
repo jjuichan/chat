@@ -61,6 +61,10 @@
     } else {
       listEl.innerHTML = bs.map(blockItem).join('');
       U.$$('.bk-text', listEl).forEach(autosize);
+      if (lastFocus) {
+        const it = listEl.querySelector(`[data-id="${lastFocus.id}"]`);
+        if (it) it.classList.add('is-active');
+      }
     }
     updateStats();
   };
@@ -94,6 +98,12 @@
       el.classList.remove('flash');
       void el.offsetWidth;
       el.classList.add('flash');
+      // on desktop jump straight into editing; on phones don't pop the keyboard
+      const ta = el.querySelector('.bk-text');
+      if (ta && !window.matchMedia('(max-width: 860px)').matches) {
+        ta.focus({ preventScroll: true });
+        lastFocus = { id, start: ta.value.length, end: ta.value.length };
+      }
     });
   };
 
@@ -353,7 +363,9 @@
     const remember = (e) => {
       const ta = e.target.closest && e.target.closest('.bk-text');
       if (!ta) return;
-      lastFocus = { id: ta.closest('.bk').dataset.id, start: ta.selectionStart, end: ta.selectionEnd };
+      const id = ta.closest('.bk').dataset.id;
+      if (!lastFocus || lastFocus.id !== id) App.setActive && App.setActive(id);
+      lastFocus = { id, start: ta.selectionStart, end: ta.selectionEnd };
     };
     ['focusin', 'keyup', 'mouseup', 'select', 'touchend'].forEach((ev) => listEl.addEventListener(ev, remember));
     document.addEventListener('selectionchange', () => {

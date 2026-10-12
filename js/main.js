@@ -15,7 +15,7 @@
   /* ---------- preview & zoom ---------- */
   function fitZoom() {
     const scroll = $('#stageScroll');
-    const pad = window.innerWidth <= 900 ? 24 : 56;
+    const pad = window.innerWidth <= 860 ? 20 : 48;
     const avail = scroll.clientWidth - pad;
     return U.clamp(avail / card.offsetWidth, 0.2, 1);
   }
@@ -55,7 +55,81 @@
 
   function render() {
     App.renderCard(card);
+    markActive(false);
     applyZoom();
+  }
+
+  /* ---------- editor ↔ preview sync ---------- */
+  let activeId = null;
+  function markActive(scroll) {
+    card.querySelectorAll('.is-active').forEach((el) => el.classList.remove('is-active'));
+    const el = activeId && card.querySelector(`[data-id="${activeId}"]`);
+    if (!el) return;
+    el.classList.add('is-active');
+    if (!scroll) return;
+    const sc = $('#stageScroll');
+    const r = el.getBoundingClientRect();
+    const sr = sc.getBoundingClientRect();
+    if (r.top < sr.top + 16 || r.bottom > sr.bottom - 16) {
+      sc.scrollTo({ top: sc.scrollTop + r.top - sr.top - Math.min(sr.height * 0.25, 80), behavior: 'smooth' });
+    }
+  }
+  App.setActive = function (id, scroll) {
+    activeId = id;
+    document.querySelectorAll('.bk.is-active').forEach((el) => el.classList.remove('is-active'));
+    const item = id && document.querySelector(`#blockList [data-id="${id}"]`);
+    if (item) item.classList.add('is-active');
+    markActive(scroll !== false);
+  };
+
+  /* ---------- resizable split between editor and preview ---------- */
+  function initSplitter() {
+    const sp = $('#splitter');
+    const ws = $('#workspace');
+    const narrow = () => window.matchMedia('(max-width: 860px)').matches;
+    const apply = () => {
+      if (narrow()) {
+        ws.style.removeProperty('--panel-w');
+        if (App.ui.stageH) ws.style.setProperty('--stage-h', App.ui.stageH + '%');
+      } else if (App.ui.panelW) ws.style.setProperty('--panel-w', App.ui.panelW + 'px');
+    };
+    apply();
+    window.addEventListener('resize', apply);
+    sp.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      sp.setPointerCapture(e.pointerId);
+      sp.classList.add('dragging');
+      const r = ws.getBoundingClientRect();
+      const move = (ev) => {
+        if (narrow()) {
+          App.ui.stageH = U.clamp(Math.round(((ev.clientY - r.top) / r.height) * 100), 18, 78);
+          ws.style.setProperty('--stage-h', App.ui.stageH + '%');
+        } else {
+          App.ui.panelW = U.clamp(Math.round(ev.clientX - r.left), 340, Math.min(760, r.width - 320));
+          ws.style.setProperty('--panel-w', App.ui.panelW + 'px');
+        }
+        if (App.ui.zoom === 'fit') applyZoom();
+      };
+      const up = () => {
+        sp.classList.remove('dragging');
+        sp.removeEventListener('pointermove', move);
+        sp.removeEventListener('pointerup', up);
+        sp.removeEventListener('pointercancel', up);
+        App.saveUI();
+      };
+      sp.addEventListener('pointermove', move);
+      sp.addEventListener('pointerup', up);
+      sp.addEventListener('pointercancel', up);
+    });
+    // double-click / double-tap: reset
+    sp.addEventListener('dblclick', () => {
+      delete App.ui.stageH;
+      delete App.ui.panelW;
+      ws.style.removeProperty('--stage-h');
+      ws.style.removeProperty('--panel-w');
+      App.saveUI();
+      applyZoom();
+    });
   }
 
   function initStage() {
@@ -109,8 +183,8 @@
     card.addEventListener('click', (e) => {
       const el = e.target.closest('[data-id]');
       if (!el) return;
-      if (window.matchMedia('(max-width: 900px)').matches) return;
       App.revealBlock(el.dataset.id);
+      App.setActive(el.dataset.id, false);
     });
   }
 
@@ -167,7 +241,7 @@
     initTop();
 
     App.setTab(App.ui.tab || 'blocks');
-    App.setMobileView(App.ui.mobileView || 'edit');
+    initSplitter();
     App.renderList();
     App.renderSpeakers();
     App.renderPresets();

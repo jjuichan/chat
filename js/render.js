@@ -183,7 +183,7 @@
     const c = (s && s.color) || {};
     const name = c.name || st.color.accent;
     const bubble = c.bubble || '#EEE';
-    return `--sp-name:${name};--sp-on:${U.onColor(name)};--sp-text:${c.text || 'var(--text)'};--sp-bubble:${bubble};--sp-btext:${c.bubbleText || U.onColor(bubble)};--sp-soft:${U.rgba(name, 0.12)}`;
+    return `--sp-name:${name};--sp-on:${U.onColor(name)};--sp-text:${c.text || 'var(--text)'};--sp-bubble:${bubble};--sp-btext:${c.bubbleText || U.onColor(bubble)};--sp-soft:${U.rgba(name, 0.09)}`;
   }
   function nameHTML(s, st) {
     if (!s) return '';
@@ -316,6 +316,7 @@
       'ns-' + st.names.style,
       'mk-' + st.emph.mark,
       'eb-' + st.emph.block,
+      'ds-' + (st.dlgStyle || 'plain'),
       st.panel.on ? 'panel-on' : 'panel-off',
       st.ratio !== 'auto' ? 'has-ratio' : '',
       st.bubble.avatar ? 'with-av' : 'no-av',

@@ -39,18 +39,39 @@
     return part ? part.id : null;
   }
 
-  function lastMention(text, table) {
+  // Who is the subject in the narration right before a line of dialogue?
+  // 1) the last name used as a subject (리츠는 / 엔쥬가 …)  2) the most-mentioned name
+  function guessFromContext(text, table) {
+    if (!text) return null;
     let best = null;
     let bestPos = -1;
+    const count = {};
     table.forEach((r) => {
-      if (r.name.length < 1) return;
-      const i = text.lastIndexOf(r.name);
-      if (i > bestPos) {
-        bestPos = i;
-        best = r.id;
+      const re = new RegExp(r.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(은|는|이|가|도|께서|만)(?=[\\s,.…!?]|$)', 'g');
+      let m;
+      while ((m = re.exec(text))) {
+        if (m.index > bestPos) {
+          bestPos = m.index;
+          best = r.id;
+        }
       }
+      const n = text.split(r.name).length - 1;
+      if (n) count[r.id] = (count[r.id] || 0) + n;
     });
-    return best;
+    if (best) return best;
+    const top = Object.entries(count).sort((a, b) => b[1] - a[1])[0];
+    return top ? top[0] : null;
+  }
+
+  // A quote-less paragraph that reads like a spoken line (short, no narrative "~다." ending)
+  function looksLikeDialogue(t) {
+    const s = t.trim();
+    if (s.length > 90) return false;
+    if (/다[.…!?~」』”"']*$/.test(s)) return false;
+    const sentences = s.split(/(?<=[.!?…])\s+/).filter(Boolean);
+    if (sentences.length > 3) return false;
+    if (sentences.some((x) => /다[.…!?]*$/.test(x))) return false;
+    return true;
   }
 
   // Split one line into segments: {kind:'narr'|'dlg'|'plain', text}
@@ -104,11 +125,11 @@
   }
 
   /**
-   * opts: { plainAs: 'narration'|'dialogue', guess: 'mention'|'alternate'|'none',
+   * opts: { plainAs: 'auto'|'narration'|'dialogue', guess: 'mention'|'alternate'|'none',
    *         stripQuotes: bool, asterisk: bool }
    */
   App.parseRaw = function (raw, speakers, opts) {
-    opts = Object.assign({ plainAs: 'narration', guess: 'mention', stripQuotes: true, asterisk: true }, opts || {});
+    opts = Object.assign({ plainAs: 'auto', guess: 'mention', stripQuotes: true, asterisk: true }, opts || {});
     const table = aliasTable(speakers);
     const mains = speakers.slice(0, 2).map((s) => s.id);
     const blocks = [];
@@ -123,7 +144,7 @@
     const guessSpeaker = () => {
       if (opts.guess === 'none') return null;
       if (opts.guess === 'mention') {
-        const m = lastMention(context, table);
+        const m = guessFromContext(context, table);
         if (m) return m;
       }
       if (mains.length === 2) {
@@ -145,7 +166,8 @@
       if (!line) return;
       // dividers
       if (/^([-=*_~]\s*){3,}$/.test(line) || /^[✦✧★☆◆◇♡♥・·]{1,}(\s*[✦✧★☆◆◇♡♥・·])*$/.test(line)) {
-        push({ type: 'divider', text: '' });
+        // a divider before any text is just a header mark in most chat logs
+        if (blocks.length && blocks[blocks.length - 1].type !== 'divider') push({ type: 'divider', text: '' });
         return;
       }
       // "이름: 대사" / "[이름] 대사" / "【이름】 대사"
@@ -189,11 +211,22 @@
         return;
       }
 
+      // a whole paragraph without quotes or asterisks: decide by how it reads
+      if (opts.plainAs === 'auto' && segs.length === 1 && segs[0].kind === 'plain') {
+        const t = segs[0].text.trim();
+        if (looksLikeDialogue(t)) addDialogue(stripWrap(t), guessSpeaker(), true);
+        else {
+          push({ type: 'narration', text: t });
+          context = t; // only the latest paragraph matters for guessing
+        }
+        return;
+      }
+
       segs.forEach((s) => {
         if (s.kind === 'dlg') {
           const sp = guessSpeaker();
           addDialogue(s.text, sp, true, s.raw);
-        } else if (s.kind === 'narr' || opts.plainAs === 'narration') {
+        } else if (s.kind === 'narr' || opts.plainAs !== 'dialogue') {
           const t = s.text.trim();
           if (!t) return;
           push({ type: 'narration', text: t });
