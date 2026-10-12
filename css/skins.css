@@ -80,43 +80,30 @@
 .skp-vol { margin-left: auto; }
 
 /* ---------------- Retro Personal Web ---------------- */
-.sk-retroweb .xc-panel { padding: 0 0 22px; }
-.sk-retroweb .xc-body, .sk-retroweb .xc-comment { margin-left: 30px; margin-right: 30px; }
-.skr-bar { display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 8px; background: linear-gradient(#FFB3B5, #FF8F91); color: #FFFFFF; font-family: 'DotGothic16', monospace; font-size: 13px; letter-spacing: .04em; border-bottom: 2px solid #E7777A; line-height: 1; }
+.sk-retroweb .xc-panel { padding: 0 0 24px; }
+.sk-retroweb .xc-body, .sk-retroweb .xc-comment { margin-left: 34px; margin-right: 34px; }
+.skr-bar { display: flex; align-items: center; gap: 8px; height: 28px; padding: 0 8px; background: linear-gradient(#F7C9CB, #EFAFB2); color: #FFFFFF; font-family: 'DotGothic16', monospace; font-size: 12.5px; letter-spacing: .04em; line-height: 1; }
 .skr-bar svg { display: block; }
 .skr-bar > span:not(.btns) { white-space: nowrap; flex: 1; min-width: 0; }
-.skr-bar .btns { margin-left: auto; display: flex; gap: 3px; }
-.skr-bar .btns i { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; background: #F5F3F6; color: #6B6670; font-style: normal; font-size: 12px; line-height: 1; border: 1px solid #FFFFFF; box-shadow: inset -1px -1px 0 #9A95A0; }
-.skr-marq { display: flex; align-items: center; justify-content: center; gap: 10px; background: #FFF0F0; color: #E7686C; font-family: 'DotGothic16', monospace; font-size: 12.5px; padding: 5px 10px; border-bottom: 1px dotted #FF8F91; white-space: nowrap; overflow: hidden; line-height: 1.4; }
-.skr-marq svg { display: block; flex: none; }
-.skr-top { display: flex; gap: 22px; align-items: center; padding: 24px 30px 14px; }
-.skr-profs { display: flex; align-items: center; gap: 6px; flex: none; }
-.skr-pf { display: flex; flex-direction: column; align-items: center; gap: 6px; font-family: 'DotGothic16', var(--f-name); font-size: 11.5px; color: #6B6670; line-height: 1.2; }
-.skr-av { display: block; width: 62px; height: 62px; background-size: cover; background-position: center; border: 2px solid #FFFFFF; box-shadow: 0 0 0 2px #C2C2CA, 4px 4px 0 2px #FF8F91; }
-.skr-av.is-init { display: flex; align-items: center; justify-content: center; font-family: var(--f-title); font-size: 24px; }
+.skr-bar .btns { display: flex; gap: 3px; }
+.skr-bar .btns i { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; background: #FBF9FB; color: #8A8590; font-style: normal; font-size: 11px; line-height: 1; border: 1px solid #FFFFFF; box-shadow: inset -1px -1px 0 #C2C2CA; }
+.skr-top { display: flex; gap: 24px; align-items: center; margin: 0 34px 38px; padding: 28px 0 22px; border-bottom: 1px dotted #E8A5A8; }
+.skr-profs { display: flex; align-items: center; gap: 8px; flex: none; }
+.skr-pf { display: flex; flex-direction: column; align-items: center; gap: 6px; font-family: 'DotGothic16', var(--f-name); font-size: 11px; color: #8A8590; line-height: 1.2; }
+.skr-av { display: block; width: 56px; height: 56px; background-size: cover; background-position: center; border: 2px solid #FFFFFF; box-shadow: 0 0 0 1px #D9D6DD; }
+.skr-av.is-init { display: flex; align-items: center; justify-content: center; font-family: var(--f-title); font-size: 22px; }
 .skr-and { line-height: 0; margin-bottom: 18px; }
 .skr-ttl { min-width: 0; }
-.sk-retroweb .xc-title { margin: 0 0 6px; line-height: 1.35; }
-.skr-upd { font-family: 'VT323', monospace; font-size: 17px; color: #9A95A0; letter-spacing: .04em; line-height: 1.2; }
-.skr-count { font-family: 'DotGothic16', monospace; font-size: 11.5px; color: #6B6670; margin-top: 5px; line-height: 1.6; white-space: nowrap; }
-.skr-count span { display: inline-flex; gap: 1px; vertical-align: middle; }
-.skr-count i { display: block; font-style: normal; background: #29252B; color: #FF8F91; font-family: 'VT323', monospace; font-size: 15px; width: 12px; text-align: center; line-height: 17px; }
-.skr-banners { display: flex; gap: 6px; padding: 0 30px 18px; flex-wrap: wrap; }
-.skr-banners span { width: 88px; height: 31px; display: flex; align-items: center; justify-content: center; font-family: 'VT323', monospace; font-size: 18px; letter-spacing: .04em; line-height: 1; border: 1px solid #FFFFFF; box-shadow: 0 0 0 1px #C2C2CA; }
-.skr-banners .b1 { background: linear-gradient(90deg, #FF8F91 50%, #A9A9B3 50%); color: #FFFFFF; }
-.skr-banners .b2 { background: #9B111E; color: #FFFFFF; }
-.skr-banners .b3 { background-color: #FFFFFF; background-image: repeating-linear-gradient(45deg, #F4C2C2 0 2px, transparent 2px 5px); color: #6B6670; }
-.skr-banners .b4 { background: #29252B; color: #FF8F91; }
-.skr-sec { display: flex; align-items: center; gap: 10px; margin: 0 30px 28px; padding: 5px 10px; background: linear-gradient(90deg, #F4C2C2, #FFF9F8); border-left: 6px solid #FF8F91; font-family: 'DotGothic16', monospace; font-size: 13px; color: #6B6670; letter-spacing: .14em; line-height: 1.4; }
-.skr-sec i { display: block; width: 6px; height: 6px; background: #FF8F91; }
+.skr-sub { font-family: 'DotGothic16', var(--f-title); font-size: 12px; color: #E07A80; letter-spacing: .06em; line-height: 1.5; }
+.sk-retroweb .xc-title { margin: 2px 0 4px; line-height: 1.35; }
+.skr-upd { white-space: nowrap; font-family: 'VT323', monospace; font-size: 16px; color: #A6A1AB; letter-spacing: .04em; line-height: 1.2; }
 .skr-ni { display: inline-block; vertical-align: 1px; margin-right: 5px; line-height: 0; }
 .skr-ni svg { display: block; }
-.skr-div { display: inline-flex; gap: 8px; }
+.skr-div { display: flex; align-items: center; gap: 10px; width: 100%; }
+.skr-div i { display: block; flex: 1; border-top: 1px dotted #E8A5A8; }
 .skr-div svg { display: block; }
-.skr-foot { margin: 30px 30px 0; border-top: 1px dashed #FF8F91; padding-top: 14px; text-align: center; font-family: 'VT323', monospace; color: #9A95A0; font-size: 16px; line-height: 1.5; }
-.skr-nav { display: flex; justify-content: center; gap: 14px; color: #E7686C; margin-bottom: 4px; }
-.skr-copy { display: flex; align-items: center; justify-content: center; gap: 8px; }
-.skr-copy svg { display: block; }
+.skr-foot { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 34px 34px 0; padding-top: 14px; border-top: 1px dotted #E8A5A8; font-family: 'VT323', monospace; color: #A6A1AB; font-size: 16px; line-height: 1.3; }
+.skr-foot svg { display: block; }
 
 /* ---------------- Sweet Poison ---------------- */
 .skx-chain { position: absolute; left: 12px; right: 12px; top: -8px; height: 14px; background-repeat: repeat-x; background-size: 28px 14px; }
@@ -176,7 +163,7 @@
 .skk-meta dd { margin: 0; display: flex; align-items: center; gap: 6px; min-width: 0; }
 .skk-meta dd svg { display: block; }
 .skk-meta dd.sub { font-weight: 700; color: #29252B; font-family: var(--f-title); font-size: var(--fs-title); line-height: 1.35; }
-.skk-deco { display: flex; align-items: center; justify-content: flex-start; gap: 6px; padding: 14px 30px 0; margin-bottom: 30px; font-family: 'DotGothic16', var(--f-title); font-size: 13px; color: #F07478; line-height: 1.4; }
+.skk-deco { display: flex; align-items: center; justify-content: flex-start; gap: 6px; padding: 14px 30px 0; margin-bottom: 36px; font-family: 'DotGothic16', var(--f-title); font-size: 13px; color: #F07478; line-height: 1.4; }
 .skk-deco svg { display: block; }
 .skk-div { display: flex; align-items: center; gap: 8px; width: 100%; }
 .skk-div svg { display: block; }
@@ -188,57 +175,22 @@
 .skk-keys .dpad { width: 38px; height: 26px; border-radius: 50%; background: radial-gradient(circle, #FFFFFF 0 7px, #C2C2CA 8px 9px, #EDEBEF 10px); box-shadow: inset 0 0 0 1px #A9A6AE; display: block; }
 
 /* ---------------- Purikura ---------------- */
-.skq-head { margin-bottom: 30px; }
-.skq-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 8px; background: #FFFFFF; border-radius: 14px; box-shadow: 0 0 0 2px #FFD4D5, 0 8px 18px rgba(155, 17, 30, .12); }
-.skq-shot { position: relative; aspect-ratio: 3 / 4; border-radius: 10px; overflow: hidden; }
-.skq-photo { position: absolute; inset: 0; display: block; background-size: cover; background-position: center; }
-.skq-photo.is-init { display: flex; align-items: center; justify-content: center; font-family: var(--f-title); font-size: 34px; }
-.skq-shot.s1 .skq-photo, .skq-shot.s3 .skq-photo { filter: saturate(1.15) brightness(1.04); }
-.skq-scr { position: absolute; left: 6px; bottom: 6px; font-family: 'Hachi Maru Pop', cursive; font-size: 13px; color: #FFFFFF; line-height: 1.2;
-  text-shadow: 1.5px 0 0 #FF6F7A, -1.5px 0 0 #FF6F7A, 0 1.5px 0 #FF6F7A, 0 -1.5px 0 #FF6F7A, 1px 1px 0 #FF6F7A, -1px -1px 0 #FF6F7A, 1px -1px 0 #FF6F7A, -1px 1px 0 #FF6F7A; }
-.skq-st { position: absolute; right: 6px; top: 6px; line-height: 0; }
-.skq-scribble { margin: 16px 2px 4px; font-family: 'Hachi Maru Pop', var(--f-title); font-size: 14px; color: #F07478; display: flex; align-items: center; gap: 6px; line-height: 1.5; }
-.skq-scribble svg { display: block; }
-.sk-purikura .xc-title { color: #FFFFFF; margin: 4px 0 0; line-height: 1.3;
-  text-shadow: 2px 0 0 #FF6F7A, -2px 0 0 #FF6F7A, 0 2px 0 #FF6F7A, 0 -2px 0 #FF6F7A, 2px 2px 0 #FF6F7A, -2px -2px 0 #FF6F7A, 2px -2px 0 #FF6F7A, -2px 2px 0 #FF6F7A, 4px 4px 0 #9B111E; }
-.skq-div { display: inline-flex; align-items: center; gap: 10px; }
+.skq-head { margin-bottom: 32px; }
+.skq-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 6px; background: #EFECF1; border-radius: 6px; }
+.skq-shot { background: #FFFFFF; padding: 5px 5px 0; border-radius: 3px; }
+.skq-photo { display: block; width: 100%; aspect-ratio: 3 / 4; background-size: cover; background-position: center; border-radius: 2px; }
+.skq-photo.is-init { display: flex; align-items: center; justify-content: center; font-family: var(--f-title); font-size: 28px; }
+.skq-note { display: block; text-align: center; font-family: 'Hachi Maru Pop', cursive; font-size: 11px; color: #D9787E; line-height: 1; padding: 6px 0 7px; }
+.skq-scribble { display: flex; align-items: center; gap: 8px; margin: 18px 0 6px; font-family: 'Hachi Maru Pop', var(--f-title); font-size: 12.5px; color: #C98A8F; line-height: 1.5; }
+.skq-scribble i { font-style: normal; color: #D9C3C6; }
+.sk-purikura .xc-title { margin: 0; line-height: 1.3; }
+.skq-div { display: flex; align-items: center; gap: 10px; width: 100%; }
+.skq-div i { display: block; flex: 1; border-top: 1px solid #F0DCDD; }
 .skq-div svg { display: block; }
-.skq-foot { display: flex; align-items: center; gap: 10px; margin-top: 36px; }
-.skq-chk { display: block; width: 26px; height: 18px; background-image: linear-gradient(45deg, #FF8F91 25%, transparent 25%, transparent 75%, #FF8F91 75%), linear-gradient(45deg, #FF8F91 25%, transparent 25%, transparent 75%, #FF8F91 75%); background-size: 9px 9px; background-position: 0 0, 4.5px 4.5px; flex: none; }
-.skq-ft { font-family: 'Mochiy Pop One', var(--f-title); font-size: 12px; color: #FF6F7A; letter-spacing: .08em; line-height: 1.4; }
-.skq-sign { margin-left: auto; font-family: 'Hachi Maru Pop', var(--f-title); font-size: 15px; color: #9B111E; line-height: 1.4; }
-.skq-sp, .skq-heart { position: absolute; z-index: 5; line-height: 0; }
-
-/* ---------------- Live Ticket ---------------- */
-.sk-ticket .xc-panel { padding: 0 0 28px; }
-.sk-ticket .xc-body, .sk-ticket .xc-comment { margin-left: 38px; margin-right: 38px; }
-.skt-head { position: relative; display: flex; background: #29252B; color: #FFFFFF; border-radius: var(--panel-r) var(--panel-r) 0 0; }
-.skt-main { flex: 1; min-width: 0; padding: 26px 26px 22px 38px; }
-.skt-kicker { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: .22em; color: #FF8F91; line-height: 1.4; }
-.sk-ticket .xc-title { color: #FFFFFF; margin: 10px 0 4px; line-height: 1.25; }
-.skt-sub { font-family: 'Dela Gothic One', var(--f-title); font-size: 14px; color: #C2C2CA; letter-spacing: .06em; line-height: 1.4; }
-.skt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 18px; margin-top: 20px; padding-top: 14px; border-top: 1px dashed #5A535C; }
-.skt-grid div { display: flex; flex-direction: column; line-height: 1.35; }
-.skt-grid span { font-family: 'Space Mono', monospace; font-size: 9.5px; letter-spacing: .2em; color: #8F8794; }
-.skt-grid b { font-family: 'Space Mono', var(--f-body); font-size: 14px; font-weight: 700; color: #FFFFFF; }
-.skt-stub { width: 132px; flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: #9B111E; border-left: 2px dashed #FFF9F8; border-radius: 0 var(--panel-r) 0 0; padding: 18px 10px; }
-.skt-stub svg { display: block; background: #FFFFFF; padding: 4px; box-sizing: content-box; }
-.skt-admit { font-family: 'Dela Gothic One', sans-serif; font-size: 16px; line-height: 1.05; text-align: center; letter-spacing: .06em; }
-.skt-no { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: .14em; line-height: 1; }
-.skt-notch { position: absolute; width: 22px; height: 22px; border-radius: 50%; background: var(--bg); right: 121px; }
-.skt-notch.n1 { top: -11px; }
-.skt-notch.n2 { bottom: -11px; }
-.skt-set { display: flex; align-items: center; gap: 10px; margin: 28px 38px 26px; font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: .3em; color: #9B111E; font-weight: 700; line-height: 1.4; }
-.skt-set i { display: block; flex: 1; border-top: 2px solid #29252B; }
-.skt-div { display: flex; align-items: center; gap: 12px; width: 100%; }
-.skt-div i { display: block; flex: 1; border-top: 1px solid #C2C2CA; }
-.skt-div b { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: .24em; color: #9B111E; line-height: 1; }
-.skt-foot { position: relative; display: flex; align-items: center; gap: 16px; margin: 36px 38px 0; padding-top: 22px; }
-.skt-perf { position: absolute; left: -38px; right: -38px; top: 0; border-top: 2px dashed #C2C2CA; }
-.skt-fl { flex: 1; display: flex; flex-direction: column; line-height: 1.5; }
-.skt-fl b { font-family: var(--f-title); font-size: 16px; color: #29252B; }
-.skt-fl span { font-family: 'Space Mono', var(--f-body); font-size: 10.5px; color: #8F8794; letter-spacing: .06em; }
-.skt-foot svg { display: block; }
+.skq-foot { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-top: 36px; padding-top: 14px; border-top: 1px solid #F0DCDD; line-height: 1.4; }
+.skq-ft { font-family: 'Hachi Maru Pop', cursive; font-size: 11.5px; color: #C98A8F; }
+.skq-sign { font-family: var(--f-title); font-size: 15px; color: #9B111E; }
+.skq-sp { position: absolute; z-index: 5; line-height: 0; }
 
 /* ---------------- Messenger ---------------- */
 .sk-messenger .xc-panel { padding: 0; overflow: hidden; }

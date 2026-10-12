@@ -179,7 +179,7 @@
           ? `<span class="skp-art has-av">${avatarBox(a, 'skp-half l')}${avatarBox(b, 'skp-half r')}</span>`
           : `<span class="skp-art"><b>R</b><i>×</i><b>E</b></span>`;
       return `<header class="skp-head">
-        <div class="skp-top"><span>● REC</span><span>PLAYLIST — ${x.sub || 'ずうっといっしょ！'}</span><span>${x.date}</span></div>
+        <div class="skp-top"><span>● REC</span><span>${x.sub ? `PLAYLIST — ${x.sub}` : 'PLAYLIST'}</span><span>${x.date}</span></div>
         <div class="skp-player">
           <div class="skp-disc"><span class="skp-vinyl"></span>${art}</div>
           <div class="skp-info">
@@ -201,6 +201,7 @@
   };
 
   /* ===================== Retro Personal Web ===================== */
+  // a quiet take on a 2000s personal homepage: one window, two profile icons, a dotted rule
   SKINS.retroweb = {
     name: 'Retro Personal Web',
     fonts: ['dotgothic', 'vt323'],
@@ -208,28 +209,23 @@
     head(ctx) {
       const x = t(ctx);
       const [a, b] = pair(ctx);
-      const n = String(10000 + (charCount(ctx) % 90000)).padStart(6, '0');
-      const counter = Array.from(n).map((d) => `<i>${d}</i>`).join('');
       const prof = (s) => (s ? `<div class="skr-pf">${avatarBox(s, 'skr-av')}<span>${esc(App.speakerLabel(s))}</span></div>` : '');
       return `<header class="skr-head">
         <div class="skr-bar">${heartPx(2, '#FFFFFF')}<span>ritsu×enju no heya</span><span class="btns"><i>_</i><i>□</i><i>×</i></span></div>
-        <div class="skr-marq">${starPx(2, C.coral)}<span>Welcome to our homepage ★ ${x.sub || 'ずうっといっしょ！'}</span>${starPx(2, C.coral)}</div>
         <div class="skr-top">
-          <div class="skr-profs">${prof(a)}<span class="skr-and">${heartPx(3, C.coral)}</span>${prof(b)}</div>
+          <div class="skr-profs">${prof(a)}<span class="skr-and">${heartPx(2, C.coral)}</span>${prof(b)}</div>
           <div class="skr-ttl">
+            ${x.sub ? `<div class="skr-sub">${x.sub}</div>` : ''}
             ${x.title ? `<h1 class="xc-title">${x.title}</h1>` : ''}
-            <div class="skr-upd">last update : ${x.date || '----.--.--'}</div>
-            <div class="skr-count">あなたは <span>${counter}</span> 人目のお客様♡</div>
+            ${x.date ? `<div class="skr-upd">last update : ${x.date}</div>` : ''}
           </div>
         </div>
-        <div class="skr-banners"><span class="b1">R×E</span><span class="b2">LOVE ♡</span><span class="b3">since 2026</span><span class="b4">link free</span></div>
-        <div class="skr-sec"><i></i>diary log<i></i></div>
       </header>`;
     },
-    divider: () => `<span class="skr-div">${heartPx(2, C.coral)}${heartPx(2, '#C2C2CA')}${heartPx(2, C.coral)}${heartPx(2, '#C2C2CA')}${heartPx(2, C.coral)}</span>`,
+    divider: () => `<span class="skr-div"><i></i>${heartPx(2, C.coral)}<i></i></span>`,
     foot(ctx) {
       const x = t(ctx);
-      return `<footer class="skr-foot"><div class="skr-nav"><span>[ TOP ]</span><span>[ BACK ]</span><span>[ BBS ]</span></div><div class="skr-copy">${starPx(2, C.coral)} (c) 2026 ${x.foot || 'ritsu x enju'} - all rights reserved ${starPx(2, C.coral)}</div></footer>`;
+      return `<footer class="skr-foot">${heartPx(2, C.coral)}<span>(c) 2026 ${x.foot || 'ritsu x enju'}</span></footer>`;
     },
   };
 
@@ -296,7 +292,7 @@
       return `<header class="skz-head">
         <div class="skz-top"><span>R×E ZINE</span><span>VOL.${no.slice(0, 2)} — ISSUE ${no.slice(2)}</span><span>FREE / TAKE ONE</span></div>
         ${raw ? `<h1 class="xc-title skz-title">${cutout(raw)}</h1>` : ''}
-        <div class="skz-tape">${x.sub || 'ずうっといっしょ！'}</div>
+        ${x.sub ? `<div class="skz-tape">${x.sub}</div>` : ''}
         <div class="skz-date">${x.date ? `printed on ${x.date}` : ''}</div>
       </header>`;
     },
@@ -338,7 +334,7 @@
           <dt>Date</dt><dd>${x.date || '----/--/--'} 23:47</dd>
           <dt>Sub</dt><dd class="sub">${x.title || '(件名なし)'}</dd>
         </dl>
-        <div class="skk-deco">${starPx(2, '#FF8F91')}${heartPx(2, '#9B111E')}<span>${x.sub || 'ずうっといっしょ！'}</span>${heartPx(2, '#9B111E')}${starPx(2, '#FF8F91')}</div>
+        <div class="skk-deco">${starPx(2, '#FF8F91')}${heartPx(2, '#9B111E')}${x.sub ? `<span>${x.sub}</span>${heartPx(2, '#9B111E')}${starPx(2, '#FF8F91')}` : ''}</div>
       </header>`;
     },
     divider: () => `<span class="skk-div">${heartPx(2, '#FF8F91')}<i></i>${starPx(2, '#C2C2CA')}<i></i>${heartPx(2, '#9B111E')}</span>`,
@@ -349,82 +345,29 @@
   };
 
   /* ===================== Purikura (プリクラ) ===================== */
+  // photo-booth strip from the profile pictures; soft colours, thin frames, small handwritten notes
   SKINS.purikura = {
     name: 'Purikura',
-    fonts: ['hachi-maru', 'mochiy'],
+    fonts: ['hachi-maru'],
     head(ctx) {
       const x = t(ctx);
       const [a, b] = pair(ctx);
-      const shot = (s, i) =>
-        `<div class="skq-shot s${i}">${avatarBox(s, 'skq-photo')}<span class="skq-scr">${['ずっと♡', 'LOVE', 'いっしょ', '♡♡♡'][i]}</span>${i === 1 ? `<span class="skq-st">${starPx(3, '#FFFFFF')}</span>` : ''}</div>`;
+      const notes = ['ずっと', 'love', 'いっしょ', '♡'];
+      const shot = (s, i) => `<div class="skq-shot">${avatarBox(s, 'skq-photo')}<span class="skq-note">${notes[i]}</span></div>`;
       return `<header class="skq-head">
         <div class="skq-strip">${shot(a, 0)}${shot(b, 1)}${shot(a, 2)}${shot(b, 3)}</div>
-        <div class="skq-scribble">${x.date ? `${x.date}` : ''} ${heartPx(2, '#FF8F91')} ${x.sub || 'ずうっといっしょ！'}</div>
+        ${x.sub || x.date ? `<div class="skq-scribble">${[x.date, x.sub].filter(Boolean).join('<i>·</i>')}</div>` : ''}
         ${x.title ? `<h1 class="xc-title">${x.title}</h1>` : ''}
       </header>`;
     },
-    divider: () => `<span class="skq-div">${App.kit.icon(App.kit.SPARK, 14, '#FF8F91')}${App.kit.icon(App.kit.HEART, 16, '#9B111E')}${App.kit.icon(App.kit.SPARK, 14, '#C2C2CA')}</span>`,
+    divider: () => `<span class="skq-div"><i></i>${App.kit.icon(App.kit.SPARK, 11, '#E8A5A8')}<i></i></span>`,
     foot(ctx) {
       const x = t(ctx);
-      return `<footer class="skq-foot"><span class="skq-chk"></span><span class="skq-ft">PURIKURA ★ ${x.date || ''}</span><span class="skq-sign">${x.foot || 'Ritsu × Enju'}</span><span class="skq-chk"></span></footer>`;
+      return `<footer class="skq-foot"><span class="skq-ft">photo booth${x.date ? ' · ' + x.date : ''}</span>${x.foot ? `<span class="skq-sign">${x.foot}</span>` : ''}</footer>`;
     },
     over(ctx) {
       const m = ctx.st.panel.margin;
-      const sp = (l, tp, sz, c, r) => `<span class="skq-sp" style="left:${l};top:${tp}">${App.kit.icon(App.kit.SPARK, sz, c, r, 0.95)}</span>`;
-      return (
-        sp(`${m - 16}px`, `${m - 16}px`, 34, '#FFFFFF', 0) +
-        sp(`calc(100% - ${m + 20}px)`, `${m + 120}px`, 26, '#FF8F91', 12) +
-        sp(`${m - 12}px`, `calc(100% - ${m + 70}px)`, 22, '#C2C2CA', 0) +
-        `<span class="skq-heart" style="right:${m - 18}px;bottom:${m - 20}px">${App.kit.icon(App.kit.HEART, 44, '#9B111E', -14)}</span>`
-      );
-    },
-  };
-
-  /* ===================== Live Ticket ===================== */
-  function qr(n, col, seed) {
-    const rnd = seeded(seed || 11);
-    const rows = [];
-    for (let y = 0; y < n; y++) {
-      let r = '';
-      for (let x = 0; x < n; x++) {
-        const finder = (x < 3 && y < 3) || (x >= n - 3 && y < 3) || (x < 3 && y >= n - 3);
-        r += finder ? (x % (n - 3) === 1 && y % (n - 3) === 1 ? '.' : '1') : rnd() > 0.52 ? '1' : '.';
-      }
-      rows.push(r);
-    }
-    return pixel(rows, 3, { 1: col });
-  }
-  SKINS.ticket = {
-    name: 'Live Ticket',
-    fonts: ['space-mono', 'dela-gothic'],
-    head(ctx) {
-      const x = t(ctx);
-      const no = (ctx.meta.date || '').replace(/[^\d]/g, '').slice(-4) || '0412';
-      return `<header class="skt-head">
-        <div class="skt-main">
-          <div class="skt-kicker">RITSU × ENJU — ONE MAN LIVE</div>
-          ${x.title ? `<h1 class="xc-title">${x.title}</h1>` : ''}
-          <div class="skt-sub">${x.sub || 'ずうっといっしょ！'}</div>
-          <div class="skt-grid">
-            <div><span>DATE</span><b>${x.date || '----.--.--'}</b></div>
-            <div><span>OPEN / START</span><b>18:00 / 19:00</b></div>
-            <div><span>VENUE</span><b>SHIMOKITA LOFT</b></div>
-            <div><span>SEAT</span><b>A列 ${Number(no.slice(-2)) || 12}番</b></div>
-          </div>
-        </div>
-        <div class="skt-stub">
-          <span class="skt-admit">ADMIT<br>ONE</span>
-          ${qr(17, '#29252B', ctx.state.blocks.length + 5)}
-          <span class="skt-no">No.${no}</span>
-        </div>
-        <span class="skt-notch n1"></span><span class="skt-notch n2"></span>
-      </header>
-      <div class="skt-set"><span>SETLIST</span><i></i><span>♪</span></div>`;
-    },
-    divider: () => `<span class="skt-div"><i></i><b>♪ ENCORE ♪</b><i></i></span>`,
-    foot(ctx) {
-      const x = t(ctx);
-      return `<footer class="skt-foot"><span class="skt-perf"></span><div class="skt-fl"><b>${x.foot || 'Ritsu × Enju'}</b><span>再入場不可 · NO RE-ENTRY · 整理番号 A-012</span></div>${barcode(110, 34, '#29252B', 21)}</footer>`;
+      return `<span class="skq-sp" style="left:${m - 12}px;top:${m - 12}px">${App.kit.icon(App.kit.SPARK, 24, '#FFFFFF', 0, 0.95)}</span>`;
     },
   };
 

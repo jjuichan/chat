@@ -116,6 +116,9 @@
     const d = U.merge(base, doc || {});
     d.style = U.merge(App.presets.baseStyle(), (doc && doc.style) || {});
     if (typeof d.style.narr.indent === 'boolean') d.style.narr.indent = d.style.narr.indent ? 1 : 0;
+    // v3: first-line indent defaults to 1em
+    if ((doc && doc.version ? doc.version : 1) < 3 && !d.style.narr.indent) d.style.narr.indent = 1;
+    d.version = 3;
     if (!(App.skins && App.skins[d.style.skin])) d.style.skin = 'none';
     d.speakers = ((doc && doc.speakers) || base.speakers).map((s) => U.merge(App.defaultSpeaker(s.id), s));
     d.blocks = ((doc && doc.blocks) || base.blocks).map((b) =>
