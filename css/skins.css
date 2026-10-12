@@ -1,0 +1,156 @@
+/* ===== Templates — part of the exported card, so keep to export-safe CSS ===== */
+
+/* ---------------- Strawberry Diary ---------------- */
+.sk-diary .xc-panel { padding-left: calc(var(--pad) + 22px); }
+.skd-holes {
+  position: absolute; left: 14px; top: 26px; bottom: 26px; width: 16px;
+  background-image: radial-gradient(circle at 8px 8px, #F7DCE0 0 4.5px, #E8B9C1 5px, transparent 6px);
+  background-size: 16px 38px; background-repeat: repeat-y;
+}
+.skd-head { position: relative; padding-right: 176px; min-height: 160px; margin-bottom: 30px; }
+.skd-pols { position: absolute; right: -16px; top: -10px; width: 186px; height: 170px; }
+.skd-pol { position: absolute; width: 92px; background: #FFFFFF; padding: 7px 7px 5px; box-shadow: 0 5px 12px rgba(120, 40, 60, .18), 0 0 0 1px rgba(0, 0, 0, .04); }
+.skd-pol.p1 { left: 0; top: 22px; }
+.skd-pol.p2 { right: 0; top: 0; }
+.skd-photo { display: block; width: 78px; height: 78px; background-size: cover; background-position: center; }
+.skd-photo.is-init { display: flex; align-items: center; justify-content: center; font-family: var(--f-title); font-size: 30px; line-height: 1; }
+.skd-cap { display: block; text-align: center; font-family: 'Hachi Maru Pop', var(--f-name); font-size: 11px; color: #7A5A62; margin-top: 4px; line-height: 1.3; }
+.skd-tape {
+  position: absolute; left: 50%; top: -9px; width: 48px; height: 16px; margin-left: -24px; transform: rotate(-5deg);
+  background-color: rgba(255, 143, 145, .55);
+  background-image: repeating-linear-gradient(90deg, rgba(255, 255, 255, .4) 0 4px, transparent 4px 8px);
+}
+.skd-label { display: inline-flex; align-items: center; gap: 6px; font-family: 'Hachi Maru Pop', cursive; font-size: 14px; line-height: 1.4; color: #9B111E; background: #FFE6E6; padding: 4px 13px 4px 8px; border-radius: 999px; }
+.skd-label svg { display: block; }
+.skd-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 18px 0 12px; font-size: 12px; color: #9C7A82; line-height: 1.4; }
+.skd-meta .k { font-family: 'Hachi Maru Pop', cursive; letter-spacing: .06em; font-size: 11px; }
+.skd-meta .v { border-bottom: 1.5px dashed #E8B4BA; padding: 0 8px 1px; color: #4A3238; font-size: 14px; margin-right: 8px; min-width: 96px; }
+.skd-meta .w { display: inline-flex; gap: 4px; }
+.skd-meta .w i { display: inline-flex; width: 26px; height: 26px; align-items: center; justify-content: center; border-radius: 50%; }
+.skd-meta .w i.on { border: 1.5px solid #9B111E; }
+.skd-meta svg { display: block; }
+.sk-diary .xc-title { margin: 4px 0 8px; line-height: 1.3; }
+.skd-sub { display: flex; align-items: center; gap: 8px; font-family: 'Hachi Maru Pop', var(--f-title); font-size: 13px; color: #D0646B; line-height: 1.5; }
+.skd-sub svg, .skd-div svg { display: block; }
+.skd-div { display: inline-flex; align-items: center; gap: 14px; }
+.skd-foot { margin-top: 36px; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; border-top: 1.5px dashed #F0C4C9; padding-top: 14px; line-height: 1.5; }
+.skd-end { font-family: 'Hachi Maru Pop', cursive; font-size: 12px; color: #C98A93; }
+.skd-sign { font-family: var(--f-title); color: #9B111E; font-size: 16px; }
+.skd-st { position: absolute; z-index: 5; line-height: 0; }
+
+/* ---------------- Midnight Playlist ---------------- */
+.skp-top { display: flex; justify-content: space-between; gap: 10px; font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: .12em; color: #8F8794; border-bottom: 1px solid #3A343D; padding-bottom: 10px; margin-bottom: 24px; line-height: 1.4; }
+.skp-top span:first-child { color: #FF8F91; }
+.skp-player { display: flex; gap: 26px; align-items: center; }
+.skp-disc { position: relative; width: 158px; height: 132px; flex: none; }
+.skp-vinyl {
+  position: absolute; left: 44px; top: 7px; width: 118px; height: 118px; border-radius: 50%;
+  background: radial-gradient(circle, #FF8F91 0 9px, #0E0C0F 10px 15px, transparent 16px), repeating-radial-gradient(circle, #141115 0 2px, #26222A 2.6px 3.6px);
+}
+.skp-art {
+  position: absolute; left: 0; top: 0; width: 132px; height: 132px; border-radius: 6px; overflow: hidden;
+  background: linear-gradient(140deg, #FF8F91 0%, #9B111E 62%, #29252B 100%);
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  color: #FFFFFF; font-family: 'Space Mono', monospace; font-size: 32px; font-weight: 700; line-height: 1;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, .5);
+}
+.skp-art i { font-style: normal; font-size: 18px; opacity: .8; }
+.skp-art.has-av { display: block; }
+.skp-half { position: absolute; top: 0; bottom: 0; width: 50%; background-size: cover; background-position: center; }
+.skp-half.l { left: 0; }
+.skp-half.r { right: 0; box-shadow: -2px 0 0 #211D24; }
+.skp-half.is-init { display: flex; align-items: center; justify-content: center; font-family: var(--f-title); font-size: 26px; }
+.skp-info { flex: 1; min-width: 0; }
+.skp-now { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: .2em; color: #FF8F91; line-height: 1.4; }
+.sk-playlist .xc-title { margin: 6px 0 2px; line-height: 1.3; }
+.skp-artist { color: #C2C2CA; font-size: 14px; line-height: 1.5; }
+.skp-bar { display: flex; align-items: center; gap: 10px; margin: 14px 0 8px; font-family: 'Space Mono', monospace; font-size: 10.5px; color: #8F8794; line-height: 1.4; }
+.skp-bar .trk { flex: 1; height: 3px; background: #3A343D; border-radius: 3px; position: relative; }
+.skp-bar .trk i { position: absolute; left: 0; top: 0; bottom: 0; width: 38%; background: linear-gradient(90deg, #FF8F91, #C2C2CA); border-radius: 3px; }
+.skp-bar .trk b { position: absolute; left: 38%; top: 50%; width: 11px; height: 11px; margin: -5.5px 0 0 -5.5px; border-radius: 50%; background: #FFFFFF; }
+.skp-ctrl { line-height: 0; }
+.skp-lyr { display: flex; align-items: center; gap: 12px; margin: 30px 0 28px; padding-bottom: 10px; border-bottom: 1px dashed #3A343D; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: .3em; color: #8F8794; line-height: 1.4; }
+.sk-playlist .xb-name { letter-spacing: .14em; }
+.skp-div { display: inline-block; line-height: 0; }
+.skp-foot { display: flex; align-items: center; gap: 14px; margin-top: 36px; padding-top: 18px; border-top: 1px solid #3A343D; font-family: 'Space Mono', monospace; color: #8F8794; font-size: 11px; letter-spacing: .08em; line-height: 1.5; }
+.skp-foot svg { display: block; }
+.skp-foot div { display: flex; flex-direction: column; gap: 2px; }
+.skp-foot b { color: #FF8F91; font-weight: 700; }
+.skp-foot div span { color: #C2C2CA; font-size: 12px; font-family: var(--f-title); letter-spacing: .04em; }
+.skp-vol { margin-left: auto; }
+
+/* ---------------- Love Letter ---------------- */
+.sk-letter .xc-panel { padding-top: calc(var(--pad) + 16px); }
+.skl-lace { position: absolute; left: 0; right: 0; height: 14px; background-repeat: repeat-x; background-size: 24px 14px; background-position: center; }
+.skl-lace.top { top: -14px; }
+.skl-lace.bot { bottom: -14px; transform: scaleY(-1); }
+.skl-head { text-align: center; margin-bottom: 34px; position: relative; }
+.skl-seal { line-height: 0; margin: -68px auto 14px; width: 64px; }
+.skl-dear { font-family: 'Pinyon Script', cursive; font-size: 30px; color: #9B111E; line-height: 1.2; }
+.sk-letter .xc-title { margin: 10px 0 14px; line-height: 1.35; }
+.skl-line { display: flex; justify-content: space-between; gap: 10px; border-top: 1px solid #EBC9CC; border-bottom: 1px solid #EBC9CC; padding: 7px 2px; font-size: 12.5px; color: #A88A90; letter-spacing: .08em; line-height: 1.4; }
+.skl-div { line-height: 0; display: inline-block; }
+.skl-foot { margin-top: 40px; text-align: right; }
+.skl-with { font-family: 'Pinyon Script', cursive; font-size: 26px; color: #9B111E; line-height: 1.2; }
+.skl-sign { font-family: 'Nanum Pen Script', var(--f-title); font-size: 30px; color: #3B2A2E; line-height: 1.2; margin-top: 2px; }
+.skl-pearls { display: flex; justify-content: center; align-items: center; gap: 5px; margin-top: 24px; }
+.skl-pearls i { display: block; width: 9px; height: 9px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #FFFFFF 0 18%, #EDE6EA 45%, #C2C2CA 100%); box-shadow: 0 1px 1px rgba(0, 0, 0, .15); }
+.skl-pearls i.big { width: 14px; height: 14px; }
+
+/* ---------------- Retro Personal Web ---------------- */
+.sk-retroweb .xc-panel { padding: 0 0 22px; }
+.sk-retroweb .xc-body, .sk-retroweb .xc-comment { margin-left: 30px; margin-right: 30px; }
+.skr-bar { display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 8px; background: linear-gradient(#FFB3B5, #FF8F91); color: #FFFFFF; font-family: 'DotGothic16', monospace; font-size: 13px; letter-spacing: .04em; border-bottom: 2px solid #E7777A; line-height: 1; }
+.skr-bar svg { display: block; }
+.skr-bar > span:not(.btns) { white-space: nowrap; flex: 1; min-width: 0; }
+.skr-bar .btns { margin-left: auto; display: flex; gap: 3px; }
+.skr-bar .btns i { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; background: #F5F3F6; color: #6B6670; font-style: normal; font-size: 12px; line-height: 1; border: 1px solid #FFFFFF; box-shadow: inset -1px -1px 0 #9A95A0; }
+.skr-marq { display: flex; align-items: center; justify-content: center; gap: 10px; background: #FFF0F0; color: #E7686C; font-family: 'DotGothic16', monospace; font-size: 12.5px; padding: 5px 10px; border-bottom: 1px dotted #FF8F91; white-space: nowrap; overflow: hidden; line-height: 1.4; }
+.skr-marq svg { display: block; flex: none; }
+.skr-top { display: flex; gap: 22px; align-items: center; padding: 24px 30px 14px; }
+.skr-profs { display: flex; align-items: center; gap: 6px; flex: none; }
+.skr-pf { display: flex; flex-direction: column; align-items: center; gap: 6px; font-family: 'DotGothic16', var(--f-name); font-size: 11.5px; color: #6B6670; line-height: 1.2; }
+.skr-av { display: block; width: 62px; height: 62px; background-size: cover; background-position: center; border: 2px solid #FFFFFF; box-shadow: 0 0 0 2px #C2C2CA, 4px 4px 0 2px #FF8F91; }
+.skr-av.is-init { display: flex; align-items: center; justify-content: center; font-family: var(--f-title); font-size: 24px; }
+.skr-and { line-height: 0; margin-bottom: 18px; }
+.skr-ttl { min-width: 0; }
+.sk-retroweb .xc-title { margin: 0 0 6px; line-height: 1.35; }
+.skr-upd { font-family: 'VT323', monospace; font-size: 17px; color: #9A95A0; letter-spacing: .04em; line-height: 1.2; }
+.skr-count { font-family: 'DotGothic16', monospace; font-size: 11.5px; color: #6B6670; margin-top: 5px; line-height: 1.6; white-space: nowrap; }
+.skr-count span { display: inline-flex; gap: 1px; vertical-align: middle; }
+.skr-count i { display: block; font-style: normal; background: #29252B; color: #FF8F91; font-family: 'VT323', monospace; font-size: 15px; width: 12px; text-align: center; line-height: 17px; }
+.skr-banners { display: flex; gap: 6px; padding: 0 30px 18px; flex-wrap: wrap; }
+.skr-banners span { width: 88px; height: 31px; display: flex; align-items: center; justify-content: center; font-family: 'VT323', monospace; font-size: 18px; letter-spacing: .04em; line-height: 1; border: 1px solid #FFFFFF; box-shadow: 0 0 0 1px #C2C2CA; }
+.skr-banners .b1 { background: linear-gradient(90deg, #FF8F91 50%, #A9A9B3 50%); color: #FFFFFF; }
+.skr-banners .b2 { background: #9B111E; color: #FFFFFF; }
+.skr-banners .b3 { background-color: #FFFFFF; background-image: repeating-linear-gradient(45deg, #F4C2C2 0 2px, transparent 2px 5px); color: #6B6670; }
+.skr-banners .b4 { background: #29252B; color: #FF8F91; }
+.skr-sec { display: flex; align-items: center; gap: 10px; margin: 0 30px 28px; padding: 5px 10px; background: linear-gradient(90deg, #F4C2C2, #FFF9F8); border-left: 6px solid #FF8F91; font-family: 'DotGothic16', monospace; font-size: 13px; color: #6B6670; letter-spacing: .14em; line-height: 1.4; }
+.skr-sec i { display: block; width: 6px; height: 6px; background: #FF8F91; }
+.skr-ni { display: inline-block; vertical-align: 1px; margin-right: 5px; line-height: 0; }
+.skr-ni svg { display: block; }
+.skr-div { display: inline-flex; gap: 8px; }
+.skr-div svg { display: block; }
+.skr-foot { margin: 30px 30px 0; border-top: 1px dashed #FF8F91; padding-top: 14px; text-align: center; font-family: 'VT323', monospace; color: #9A95A0; font-size: 16px; line-height: 1.5; }
+.skr-nav { display: flex; justify-content: center; gap: 14px; color: #E7686C; margin-bottom: 4px; }
+.skr-copy { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.skr-copy svg { display: block; }
+
+/* ---------------- Sweet Poison ---------------- */
+.skx-chain { position: absolute; left: 12px; right: 12px; top: -8px; height: 14px; background-repeat: repeat-x; background-size: 28px 14px; }
+.skx-head { margin-bottom: 34px; }
+.skx-sub { font-family: 'RocknRoll One', var(--f-title); font-size: 15px; color: #FF8F91; letter-spacing: .08em; line-height: 1.5; }
+.sk-poison .xc-title { color: #FFFFFF; text-shadow: 3px 3px 0 #9B111E; letter-spacing: .02em; margin: 8px 0 12px; line-height: 1.25; font-weight: 400; }
+.skx-meta { display: flex; align-items: center; gap: 10px; font-family: 'Space Mono', monospace; font-size: 11px; color: #C2C2CA; letter-spacing: .14em; border-top: 2px solid #9B111E; padding-top: 8px; line-height: 1.4; }
+.skx-x { margin-left: auto; line-height: 0; }
+.skx-div { display: flex; align-items: center; gap: 10px; width: 100%; }
+.skx-div i { display: block; flex: 1; border-top: 2px dashed #463D45; }
+.skx-div b { color: #C2C2CA; font-size: 13px; line-height: 1; font-weight: 400; }
+.skx-div svg { display: block; }
+.skx-foot { display: flex; align-items: center; gap: 16px; margin-top: 38px; padding-top: 16px; border-top: 2px solid #9B111E; }
+.skx-foot svg { display: block; }
+.skx-foot div { display: flex; flex-direction: column; font-family: 'Space Mono', monospace; line-height: 1.5; }
+.skx-foot b { color: #FFFFFF; font-size: 14px; letter-spacing: .08em; font-family: var(--f-name); }
+.skx-foot span { color: #8E848A; font-size: 10.5px; letter-spacing: .14em; }
+.skx-pin, .skx-st, .skx-sp { position: absolute; z-index: 5; line-height: 0; }
+.skx-tag { position: absolute; z-index: 5; background: #9B111E; color: #FFFFFF; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 12px; letter-spacing: .2em; line-height: 1.2; padding: 5px 12px; transform: rotate(4deg); box-shadow: 3px 3px 0 #000000; border: 1.5px solid #000000; }

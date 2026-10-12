@@ -187,7 +187,8 @@
   }
   function nameHTML(s, st) {
     if (!s) return '';
-    const label = esc(App.speakerLabel(s));
+    const sk = App.skins && App.skins[st.skin];
+    const label = (sk && sk.namePrefix ? sk.namePrefix(s, st) : '') + esc(App.speakerLabel(s));
     if (st.names.style === 'bracket') return `<span class="xb-name">[${label}]</span>`;
     if (st.names.style === 'dot') return `<span class="xb-name"><i class="nd"></i>${label}</span>`;
     return `<span class="xb-name">${label}</span>`;
@@ -207,15 +208,24 @@
     if (ctx.prev && ctx.prev.type !== b.type && b.type !== 'divider' && ctx.prev.type !== 'divider') cls.push('turn');
     if (b.emph) cls.push('is-emph');
     if (b.type === 'divider') {
-      return `<div class="xb xb-div" data-id="${b.id}" style="${gapStyle}">${ornament(st.divider === 'twist' ? 'twist' : st.divider, st, 110)}</div>`;
+      const sk = App.skins && App.skins[st.skin];
+      const orn = st.divider === 'skin' && sk && sk.divider ? sk.divider(st) : ornament(st.divider === 'skin' ? 'line' : st.divider, st, 110);
+      return `<div class="xb xb-div" data-id="${b.id}" style="${gapStyle}">${orn}</div>`;
+    }
+    // per-paragraph alignment / first-line indent (overrides the global setting)
+    let alignStyle = '';
+    if (b.align) cls.push('al-' + b.align);
+    if (b.indent != null && b.indent !== '') {
+      cls.push('has-ind');
+      alignStyle = `--ind:${b.indent}em;`;
     }
     const body = App.formatInline(b.text);
     if (b.type === 'narration') {
       cls.push('xb-narr');
-      return `<p class="${cls.join(' ')}" data-id="${b.id}" style="${gapStyle}">${body}</p>`;
+      return `<p class="${cls.join(' ')}" data-id="${b.id}" style="${gapStyle}${alignStyle}">${body}</p>`;
     }
     // dialogue
-    const s = App.speaker(b.speaker);
+    const s = ctx.speaker(b.speaker);
     const [qo, qc] = QUOTES[st.quotes] || QUOTES['“”'];
     const text = `${esc(qo)}${body}${esc(qc)}`;
     const sv = speakerVars(s, st);
@@ -227,21 +237,21 @@
       cls.push('side-' + side);
       if (cont) cls.push('cont');
       const av = st.bubble.avatar ? (cont ? '<span class="xb-av xb-av-ghost"></span>' : avatarHTML(s)) : '';
-      return `<div class="${cls.join(' ')}" data-id="${b.id}" style="${sv};${gapStyle}">${av}<div class="xb-col">${
+      return `<div class="${cls.join(' ')}" data-id="${b.id}" style="${sv};${gapStyle}${alignStyle}">${av}<div class="xb-col">${
         cont || !s ? '' : nameHTML(s, st)
       }<div class="xb-bubble">${text}</div></div></div>`;
     }
     if (st.layout === 'script') {
-      return `<div class="${cls.join(' ')}" data-id="${b.id}" style="${sv};${gapStyle}"><div class="xb-ncol">${nameHTML(s, st)}</div><p class="xb-text">${text}</p></div>`;
+      return `<div class="${cls.join(' ')}" data-id="${b.id}" style="${sv};${gapStyle}${alignStyle}"><div class="xb-ncol">${nameHTML(s, st)}</div><p class="xb-text">${text}</p></div>`;
     }
     // novel
     const pos = st.names.position;
     if (pos === 'inline') {
-      return `<p class="${cls.join(' ')}" data-id="${b.id}" style="${sv};${gapStyle}">${nameHTML(s, st)}<span class="xb-text">${text}</span></p>`;
+      return `<p class="${cls.join(' ')}" data-id="${b.id}" style="${sv};${gapStyle}${alignStyle}">${nameHTML(s, st)}<span class="xb-text">${text}</span></p>`;
     }
     const av = st.names.avatar && s && pos === 'above' ? avatarHTML(s) : '';
     const head = pos === 'above' && s ? `<div class="xb-head">${av}${nameHTML(s, st)}</div>` : '';
-    return `<div class="${cls.join(' ')}" data-id="${b.id}" style="${sv};${gapStyle}">${head}<p class="xb-text">${text}</p></div>`;
+    return `<div class="${cls.join(' ')}" data-id="${b.id}" style="${sv};${gapStyle}${alignStyle}">${head}<p class="xb-text">${text}</p></div>`;
   }
 
   /* ---------- the card ---------- */
@@ -294,7 +304,8 @@
       '--foot-align': st.foot.align,
       '--narr-align': st.narr.align,
       '--narr-style': st.narr.italic ? 'italic' : 'normal',
-      '--narr-indent': st.narr.indent ? '1em' : '0',
+      '--narr-indent': (st.narr.indent === true ? 1 : Number(st.narr.indent) || 0) + 'em',
+      '--dlg-align': st.dlgAlign || 'left',
       '--bub-r': Math.round(st.bubble.radius) + 'px',
       '--bub-max': st.bubble.maxWidth + '%',
       '--c1': st.deco.color1,
@@ -305,12 +316,17 @@
       .join(';');
   };
 
-  App.renderCard = function (cardEl) {
-    const state = App.state;
+  App.renderCard = function (cardEl, state) {
+    state = state || App.state;
     const st = state.style;
     const meta = state.meta;
+    const skin = (App.skins && App.skins[st.skin]) || null;
+    const speaker = (id) => state.speakers.find((x) => x.id === id) || null;
+    const sctx = { st, meta, state, speaker, esc, avatar: avatarHTML, label: App.speakerLabel };
     const cls = [
       'xc',
+      skin ? 'sk-' + st.skin : '',
+      'da-' + (st.dlgAlign || 'left'),
       'ly-' + st.layout,
       'np-' + st.names.position,
       'ns-' + st.names.style,
@@ -336,7 +352,8 @@
     const hasTitle = meta.showTitle && meta.title;
     const hasSub = meta.showSubtitle && meta.subtitle;
     const hasDate = meta.showDate && meta.date;
-    if (hasTitle || hasSub || hasDate) {
+    if (skin && skin.head) head = skin.head(sctx);
+    else if (hasTitle || hasSub || hasDate) {
       head += '<header class="xc-head">';
       if (hasSub) head += `<div class="xc-sub">${esc(meta.subtitle)}</div>`;
       if (hasTitle) head += `<h1 class="xc-title">${App.formatInline(meta.title)}</h1>`;
@@ -350,7 +367,7 @@
     let body = '';
     let prev = null;
     visible.forEach((b, i) => {
-      body += blockHTML(b, i, { st, prev });
+      body += blockHTML(b, i, { st, prev, speaker });
       prev = b;
     });
     if (!visible.length) body = '<p class="xb xb-narr xb-empty">왼쪽에서 원문을 붙여넣거나 블록을 추가해 주세요.</p>';
@@ -359,7 +376,8 @@
     if (meta.showComment && meta.comment) {
       tail += `<aside class="xc-comment"><span class="xc-cmark">${icon(HEART, 12, st.deco.color2)}</span><div>${App.formatInline(meta.comment)}</div></aside>`;
     }
-    if (meta.showFooter && meta.footer) {
+    if (skin && skin.foot) tail += skin.foot(sctx);
+    else if (meta.showFooter && meta.footer) {
       tail += `<footer class="xc-foot"><i style="background:${st.deco.color1}"></i><span>${esc(meta.footer)}</span><i style="background:${st.deco.color2}"></i></footer>`;
     }
 
@@ -371,8 +389,14 @@
       over += `<div class="xd-stamp" style="right:${Math.max(10, Math.round(st.panel.margin * 0.55))}px;bottom:${Math.max(10, Math.round(st.panel.margin * 0.5))}px;color:${st.deco.color2};border-color:${st.deco.color2}"><span>${esc(meta.stampTop || '')}</span>${icon(HEART, 11, st.deco.color2)}<span>${esc(meta.stampBottom || '')}</span></div>`;
     }
 
-    cardEl.innerHTML = `${layers}<div class="xc-deco">${decoLayer(st)}</div><div class="xc-panel">${head}<div class="xc-body">${body}</div>${tail}</div>${over}`;
+    if (skin && skin.over) over += skin.over(sctx);
+    const deco = decoLayer(st) + (skin && skin.deco ? skin.deco(sctx) : '');
+    const panelTop = skin && skin.panelTop ? skin.panelTop(sctx) : '';
+    cardEl.innerHTML = `${layers}<div class="xc-deco">${deco}</div><div class="xc-panel">${panelTop}${head}<div class="xc-body">${body}</div>${tail}</div>${over}`;
   };
+
+  // drawing helpers shared with the templates (skins.js)
+  App.kit = { icon, svgURL, twistSVG, knotSVG, ornament, avatarHTML, HEART, SPARK, PETAL };
 
   // mini preview tile for preset gallery
   App.presetSwatch = function (p) {

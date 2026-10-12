@@ -115,6 +115,8 @@
     const base = App.defaultDoc();
     const d = U.merge(base, doc || {});
     d.style = U.merge(App.presets.baseStyle(), (doc && doc.style) || {});
+    if (typeof d.style.narr.indent === 'boolean') d.style.narr.indent = d.style.narr.indent ? 1 : 0;
+    if (!(App.skins && App.skins[d.style.skin])) d.style.skin = 'none';
     d.speakers = ((doc && doc.speakers) || base.speakers).map((s) => U.merge(App.defaultSpeaker(s.id), s));
     d.blocks = ((doc && doc.blocks) || base.blocks).map((b) =>
       Object.assign({ id: U.uid(), type: 'narration', speaker: null, text: '', emph: false, hidden: false, gap: 0 }, b)
@@ -171,6 +173,7 @@
     if (store.write(KEY, App.state)) App.emit('saved', new Date());
   }
   const persistLater = U.debounce(persist, 500);
+  App.flushSave = persist;
   let rafPending = false;
   /**
    * Call after mutating App.state.

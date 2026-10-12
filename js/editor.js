@@ -44,7 +44,11 @@
       b.type === 'divider'
         ? '<div class="bk-div">구분선</div>'
         : `<textarea class="bk-text" rows="1" spellcheck="false" placeholder="${b.type === 'dialogue' ? '대사를 입력하세요' : '서술문을 입력하세요'}">${esc(b.text)}</textarea>`;
-    const gap = b.gap ? `<span class="bk-gap">간격 ${b.gap > 0 ? '+' : ''}${b.gap}</span>` : '';
+    const tags = [];
+    if (b.align) tags.push({ left: '왼쪽', center: '가운데', right: '오른쪽', justify: '양쪽' }[b.align]);
+    if (b.indent != null && b.indent !== '') tags.push(`들여쓰기 ${b.indent}`);
+    if (b.gap) tags.push(`간격 ${b.gap > 0 ? '+' : ''}${b.gap}`);
+    const gap = tags.length ? `<span class="bk-gap">${tags.join(' · ')}</span>` : '';
     return `<div class="${cls.join(' ')}" data-id="${b.id}" style="--sp:${color || ''}"><div class="bk-head">${head}</div>${body}${gap}</div>`;
   }
 
@@ -211,6 +215,7 @@
     const el = menu.el;
     const b = blocks()[idxOf(id)];
     $('#menuGap').textContent = b.gap ? (b.gap > 0 ? '+' : '') + b.gap : '기본';
+    syncMenuAlign(b);
     el.hidden = false;
     const r = anchor.getBoundingClientRect();
     const mw = el.offsetWidth;
@@ -220,6 +225,14 @@
     if (top + mh > window.innerHeight - 8) top = Math.max(8, r.top - mh - 4);
     el.style.left = Math.max(8, left) + 'px';
     el.style.top = top + 'px';
+  }
+  function syncMenuAlign(b) {
+    U.$$('.menu-align button', menu.el).forEach((x) => x.classList.toggle('on', x.dataset.m === 'al-' + (b.align || '')));
+    $('#menuInd').textContent = b.indent != null && b.indent !== '' ? b.indent + 'em' : '기본';
+  }
+  function setAlign(b, align) {
+    b.align = align || '';
+    App.commit({ list: true, immediate: true });
   }
   function closeMenu() {
     if (menu.el) menu.el.hidden = true;
@@ -255,6 +268,24 @@
         $('#menuGap').textContent = b.gap ? (b.gap > 0 ? '+' : '') + b.gap : '기본';
         App.commit({ list: true });
         return; // keep menu open
+      case 'al-':
+      case 'al-left':
+      case 'al-center':
+      case 'al-right':
+      case 'al-justify':
+        setAlign(b, m.slice(3));
+        syncMenuAlign(b);
+        return;
+      case 'indMinus':
+      case 'indPlus': {
+        const cur = b.indent != null && b.indent !== '' ? b.indent : null;
+        let v = cur == null ? (m === 'indPlus' ? 1 : 0) : cur + (m === 'indPlus' ? 0.5 : -0.5);
+        if (m === 'indMinus' && cur === 0) v = null; // back to the global setting
+        b.indent = v == null ? null : U.clamp(v, 0, 4);
+        syncMenuAlign(b);
+        App.commit({ list: true });
+        return;
+      }
       case 'del':
         blocks().splice(i, 1);
         App.commit({ list: true, immediate: true });
@@ -449,7 +480,21 @@
       else if (f === 'under') wrapSelection('__');
       else if (f === 'small') wrapSelection('~~');
       else if (!lastFocus) App.toast('먼저 블록을 선택해 주세요.');
-      else if (f === 'split') splitAt(lastFocus.id, lastFocus.start);
+      else if (f.startsWith('al-')) {
+        const b = blocks()[idxOf(lastFocus.id)];
+        if (!b) return;
+        const a = f.slice(3);
+        setAlign(b, b.align === a ? '' : a); // pressing the active one returns to the default
+        App.toast(b.align ? `이 문단: ${{ left: '왼쪽', center: '가운데', right: '오른쪽', justify: '양쪽' }[a]} 정렬` : '이 문단: 기본 정렬', 'ok', 1400);
+      } else if (f === 'indent') {
+        const b = blocks()[idxOf(lastFocus.id)];
+        if (!b) return;
+        const cur = b.indent != null && b.indent !== '' ? b.indent : null;
+        b.indent = cur == null ? 1 : cur >= 2 ? null : cur === 0 ? 1 : cur + 1;
+        if (cur === null) b.indent = 1;
+        App.commit({ list: true, immediate: true });
+        App.toast(b.indent == null ? '이 문단: 기본 들여쓰기' : `이 문단: 첫 줄 ${b.indent}em 들여쓰기`, 'ok', 1400);
+      } else if (f === 'split') splitAt(lastFocus.id, lastFocus.start);
       else if (f === 'merge') mergeUp(lastFocus.id);
     });
 

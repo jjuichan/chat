@@ -192,3 +192,19 @@
   font-family: var(--f-title); font-size: var(--fs-small); color: var(--muted); letter-spacing: .14em; line-height: 1.4;
 }
 .xc-foot i { display: block; width: 5px; height: 5px; border-radius: 50%; }
+
+/* paragraph alignment: global dialogue alignment (novel) + per-block overrides */
+.ly-novel.da-center .xb-dlg { text-align: center; }
+.ly-novel.da-right .xb-dlg { text-align: right; }
+.ly-novel.da-center .xb-dlg .xb-head { justify-content: center; }
+.ly-novel.da-right .xb-dlg .xb-head { justify-content: flex-end; }
+.ly-novel.da-right.ds-bar .xb-dlg { border-left: 0; border-right: 3px solid var(--sp-name); padding: 1px 16px 1px 0; }
+.xc .xb.al-left { text-align: left; }
+.xc .xb.al-center { text-align: center; }
+.xc .xb.al-right { text-align: right; }
+.xc .xb.al-justify { text-align: justify; }
+.xc .xb.al-left .xb-head { justify-content: flex-start; }
+.xc .xb.al-center .xb-head { justify-content: center; }
+.xc .xb.al-right .xb-head { justify-content: flex-end; }
+.xc .xb-narr.has-ind, .xc .xb-dlg.has-ind .xb-text { text-indent: var(--ind); }
+.ly-novel.ds-center .xb-dlg.al-left, .ly-novel.ds-center .xb-dlg.al-right { padding-left: 0; padding-right: 0; }

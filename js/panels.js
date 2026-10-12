@@ -138,6 +138,10 @@
     }
     if (tab === 'blocks') requestAnimationFrame(() => $$('.bk-text').forEach((t) => ((t.style.height = 'auto'), (t.style.height = t.scrollHeight + 'px'))));
     if (tab === 'save') App.emit('dims');
+    if (tab === 'design') {
+      App.ensurePresetFonts();
+      requestAnimationFrame(scaleThumbs);
+    }
   };
 
   /* ---------- source page ---------- */
@@ -186,8 +190,13 @@
     const used = App.state.blocks.filter((b) => b.speaker === s.id).length;
     return `<div class="spk" data-sid="${s.id}" style="--c:${s.color.name}">
       <div class="spk-top">
-        <label class="spk-av" ${av} title="아이콘 이미지 바꾸기">${init}<input type="file" accept="image/*" data-sp-avatar /><em><svg><use href="#i-image"/></svg></em></label>
+        <button type="button" class="spk-av" ${av} data-sp-act="pickAvatar" title="프로필 사진 바꾸기">${init}<em><svg><use href="#i-image"/></svg></em></button>
         <div class="spk-names"><b>${esc(App.speakerLabel(s))}</b><small>${esc([s.nameKo, s.nameJa].filter(Boolean).join(' · ') || '이름을 입력하세요')} · 대사 ${used}개</small></div>
+        <div class="spk-avbtns">
+          <button type="button" class="btn btn-sm" data-sp-act="pickAvatar"><svg><use href="#i-image"/></svg>${s.avatar ? '프사 바꾸기' : '프사 올리기'}</button>
+          ${s.avatar ? '<button type="button" class="btn btn-ghost btn-sm" data-sp-act="clearAvatar">지우기</button>' : ''}
+        </div>
+        <input type="file" accept="image/*" data-sp-avatar class="visually-hidden" tabindex="-1" aria-hidden="true" />
       </div>
       <div class="spk-body">
         <div class="field-grid cols-3">
@@ -215,7 +224,6 @@
       <div class="spk-foot">
         <div class="btn-row">
           ${s.color.text ? '<button class="btn btn-ghost btn-sm" data-sp-act="resetText">대사 색 기본값</button>' : ''}
-          ${s.avatar ? '<button class="btn btn-ghost btn-sm" data-sp-act="clearAvatar">아이콘 제거</button>' : ''}
         </div>
         ${App.state.speakers.length > 1 ? '<button class="btn btn-ghost btn-sm danger" data-sp-act="remove"><svg><use href="#i-trash"/></svg>삭제</button>' : ''}
       </div>
@@ -259,12 +267,19 @@
       }
       if (t.hasAttribute('data-sp-avatar') && t.files[0]) {
         const s = sp(t);
+        const file = t.files[0];
+        t.value = '';
+        App.toast('프사를 불러오는 중…', '', 1200);
         try {
-          s.avatar = await App.readImage(t.files[0], 240, 'image/jpeg', 0.88, true);
-          App.commit({ immediate: true });
+          s.avatar = await App.readImage(file, 320, 'image/jpeg', 0.88, true);
+          App.commit({ immediate: true, list: true });
+          App.flushSave();
           App.renderSpeakers();
+          App.renderPresets();
+          App.toast(`${App.speakerLabel(s)} 프사를 넣었어요.`, 'ok');
         } catch (err) {
-          App.toast('이미지를 불러오지 못했어요.', 'error');
+          console.error(err);
+          App.toast('이미지를 불러오지 못했어요. 다른 사진(JPG·PNG)으로 시도해 주세요.', 'error', 3600);
         }
       }
     });
@@ -284,13 +299,23 @@
       }
       const act = e.target.closest('[data-sp-act]');
       if (!act) return;
+      e.preventDefault();
       const s = sp(act);
+      if (act.dataset.spAct === 'pickAvatar') {
+        // save first: some mobile browsers reload the page while the photo picker is open
+        App.flushSave();
+        act.closest('.spk').querySelector('[data-sp-avatar]').click();
+        return;
+      }
       if (act.dataset.spAct === 'remove') {
         const used = App.state.blocks.filter((b) => b.speaker === s.id).length;
         if (used && !confirm(`이 화자의 대사 ${used}개는 화자 없음으로 바뀌어요. 삭제할까요?`)) return;
         App.state.blocks.forEach((b) => b.speaker === s.id && (b.speaker = null));
         App.state.speakers = App.state.speakers.filter((x) => x !== s);
-      } else if (act.dataset.spAct === 'clearAvatar') s.avatar = '';
+      } else if (act.dataset.spAct === 'clearAvatar') {
+        s.avatar = '';
+        App.renderPresets();
+      }
       else if (act.dataset.spAct === 'resetText') s.color.text = '';
       App.commit({ list: true, immediate: true });
       App.renderSpeakers();
@@ -309,35 +334,60 @@
   }
 
   /* ---------- image upload helper (resized + compressed so it fits in localStorage) ---------- */
-  App.readImage = function (file, maxSide, type, quality, square) {
-    return new Promise((res, rej) => {
-      const fr = new FileReader();
-      fr.onerror = rej;
-      fr.onload = () => {
-        const img = new Image();
-        img.onerror = rej;
-        img.onload = () => {
-          let sw = img.naturalWidth;
-          let sh = img.naturalHeight;
-          let sx = 0;
-          let sy = 0;
-          if (square) {
-            const m = Math.min(sw, sh);
-            sx = (sw - m) / 2;
-            sy = (sh - m) / 2;
-            sw = sh = m;
-          }
-          const k = Math.min(1, maxSide / Math.max(sw, sh));
-          const c = document.createElement('canvas');
-          c.width = Math.round(sw * k);
-          c.height = Math.round(sh * k);
-          c.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, c.width, c.height);
-          res(c.toDataURL(type, quality));
-        };
-        img.src = fr.result;
-      };
-      fr.readAsDataURL(file);
-    });
+  // Decode with as little memory as possible: phone photos are often 12MP+, and decoding them
+  // through a data URL is a common reason mobile browsers crash and reload the tab.
+  App.readImage = async function (file, maxSide, type, quality, square) {
+    let src = null;
+    let w = 0;
+    let h = 0;
+    let release = () => {};
+    if (window.createImageBitmap) {
+      try {
+        src = await createImageBitmap(file, { resizeWidth: maxSide * 2, resizeQuality: 'high' });
+      } catch (e) {
+        try {
+          src = await createImageBitmap(file);
+        } catch (e2) {
+          src = null;
+        }
+      }
+      if (src) {
+        w = src.width;
+        h = src.height;
+        release = () => src.close && src.close();
+      }
+    }
+    if (!src) {
+      const url = URL.createObjectURL(file);
+      src = await new Promise((res, rej) => {
+        const im = new Image();
+        im.onload = () => res(im);
+        im.onerror = rej;
+        im.src = url;
+      });
+      w = src.naturalWidth;
+      h = src.naturalHeight;
+      release = () => URL.revokeObjectURL(url);
+    }
+    let sx = 0;
+    let sy = 0;
+    let sw = w;
+    let sh = h;
+    if (square) {
+      const m = Math.min(w, h);
+      sx = (w - m) / 2;
+      sy = (h - m) / 2;
+      sw = sh = m;
+    }
+    const k = Math.min(1, maxSide / Math.max(sw, sh));
+    const c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(sw * k));
+    c.height = Math.max(1, Math.round(sh * k));
+    c.getContext('2d').drawImage(src, sx, sy, sw, sh, 0, 0, c.width, c.height);
+    release();
+    const out = c.toDataURL(type, quality);
+    c.width = c.height = 0;
+    return out;
   };
 
   function initBgImage() {
@@ -367,13 +417,53 @@
   }
 
   /* ---------- presets ---------- */
+  // a short excerpt of the user's own text, rendered with each preset
+  function miniDoc(p) {
+    const r = App.presets.compose(p, App.state.speakers);
+    const src = App.state.blocks.filter((b) => !b.hidden && b.type !== 'divider');
+    const pick = [];
+    const firstN = src.find((b) => b.type === 'narration');
+    const dlgs = src.filter((b) => b.type === 'dialogue');
+    if (firstN) pick.push(firstN);
+    if (dlgs[0]) pick.push(dlgs[0]);
+    const other = dlgs.find((b) => dlgs[0] && b.speaker !== dlgs[0].speaker);
+    if (other) pick.push(other);
+    else if (src[2]) pick.push(src.find((b) => !pick.includes(b)) || src[2]);
+    const cut = (t) => (t.length > 64 ? t.slice(0, 62).replace(/\s+\S*$/, '') + '…' : t);
+    const blocks = pick.filter(Boolean).map((b) => Object.assign({}, b, { text: cut(b.text), gap: 0 }));
+    return { style: r.style, speakers: r.speakers, meta: App.state.meta, blocks };
+  }
+  function scaleThumbs() {
+    $$('.pv').forEach((pv) => {
+      const card = pv.querySelector('.xc');
+      if (!card) return;
+      const k = pv.clientWidth / card.offsetWidth;
+      pv.firstElementChild.style.transform = `scale(${k})`;
+    });
+  }
+  let thumbFontsLoaded = false;
+  App.ensurePresetFonts = function () {
+    if (thumbFontsLoaded) return;
+    thumbFontsLoaded = true;
+    const fam = new Set();
+    App.presets.list.forEach((p) => App.fonts.usedFamilies(App.presets.compose(p, []).style).forEach((f) => fam.add(f)));
+    App.fonts.ensure(Array.from(fam)).then(scaleThumbs);
+  };
+
   App.renderPresets = function () {
     const grid = $('#presetGrid');
     grid.innerHTML = App.presets.list
       .map(
-        (p) => `<button class="preset ${App.state.presetId === p.id ? 'on' : ''}" data-preset="${p.id}">${App.presetSwatch(p)}<b>${esc(p.name)} <span class="hint">${esc(p.en)}</span></b><small>${esc(p.desc)}</small></button>`
+        (p) =>
+          `<button class="preset ${App.state.presetId === p.id ? 'on' : ''}" data-preset="${p.id}"><span class="pv"><span class="pv-in"><span class="pv-card"></span></span></span><b>${esc(p.name)}</b><small><em>${esc(p.en)}</em> · ${esc(p.desc)}</small></button>`
       )
       .join('');
+    App.presets.list.forEach((p, k) => {
+      const el = grid.children[k].querySelector('.pv-card');
+      App.renderCard(el, miniDoc(p));
+      el.removeAttribute('id');
+    });
+    requestAnimationFrame(scaleThumbs);
     const mine = App.store.read(App.store.KEY_PRESETS, []);
     $('#myPresetWrap').innerHTML = mine.length
       ? `<span class="lbl">내 프리셋</span><div class="chips">${mine.map((p, i) => `<button class="chip" data-my="${i}">${esc(p.name)}</button>`).join('')}</div>`
@@ -542,6 +632,7 @@
         App.saveUI();
       });
     });
+    if (window.ResizeObserver) new ResizeObserver(() => scaleThumbs()).observe($('#presetGrid'));
     App.on('panels', () => {
       App.syncControls();
       App.renderSpeakers();

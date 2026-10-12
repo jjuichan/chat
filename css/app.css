@@ -73,7 +73,8 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .
 .c-e { color: var(--enju); }
 
 /* ---------- top bar ---------- */
-.app { height: 100%; height: 100dvh; display: flex; flex-direction: column; }
+.app { position: fixed; inset: 0; display: flex; flex-direction: column; } /* pinned: the page itself never scrolls or jumps */
+html, body { overscroll-behavior: none; }
 .topbar {
   height: var(--top-h); flex: none;
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
@@ -338,15 +339,22 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
 .menu > button.danger svg { color: var(--enju); }
 .menu-gap { display: flex; align-items: center; gap: 6px; padding: 6px 10px; margin: 2px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font-size: 13.5px; color: var(--text-2); }
 .menu-gap span { margin-right: auto; }
+.menu-gap + .menu-gap { border-top: 0; margin-top: 0; }
 .menu-gap button { width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--line-2); background: var(--surface); font-weight: 800; }
 .menu-gap b { min-width: 36px; text-align: center; font-size: 13px; }
+.menu-align button { width: auto; min-width: 28px; padding: 0 6px; display: grid; place-items: center; font-size: 12px; font-weight: 700; }
+.menu-align button svg { width: 15px; height: 15px; }
+.menu-align button.on { border-color: var(--enju); color: var(--enju); background: var(--enju-soft); }
+.hint .ic { width: 14px !important; height: 14px !important; vertical-align: -2px; }
 
 /* ---------- speakers ---------- */
 .speaker-list { display: flex; flex-direction: column; gap: 12px; }
 .spk { --c: var(--text-3); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; border-top: 4px solid var(--c); }
 .spk-top { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--line); }
 .spk-av { width: 48px; height: 48px; border-radius: 50%; background: var(--c) center/cover; flex: none; display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 18px; position: relative; cursor: pointer; }
-.spk-av input { display: none; }
+.spk-av { border: 0; padding: 0; }
+.spk-avbtns { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; flex: none; }
+.visually-hidden { position: absolute !important; width: 1px; height: 1px; opacity: 0; overflow: hidden; clip: rect(0 0 0 0); pointer-events: none; }
 .spk-av em { position: absolute; right: -4px; bottom: -4px; width: 22px; height: 22px; border-radius: 50%; background: var(--surface); display: grid; place-items: center; box-shadow: var(--shadow-1), 0 0 0 1px var(--line); color: var(--text-2); }
 .spk-av em svg { width: 12px; height: 12px; }
 .spk-names { flex: 1; min-width: 0; }
@@ -365,6 +373,10 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
 .preset.on { border-color: var(--enju); box-shadow: 0 0 0 3px var(--focus); }
 .preset b { display: block; font-size: 14px; padding: 7px 4px 0; }
 .preset small { display: block; font-size: 12.5px; color: var(--text-3); padding: 0 4px 3px; line-height: 1.45; }
+.pv { display: block; position: relative; height: 200px; overflow: hidden; border-radius: 8px; background: var(--surface-3); pointer-events: none; }
+.pv-in { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.pv::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 36px; background: linear-gradient(transparent, rgba(0, 0, 0, .12)); }
+.preset small em { font-style: normal; font-weight: 700; color: var(--text-2); }
 .sw { display: block; position: relative; height: 92px; border-radius: 8px; overflow: hidden; padding: 12px; }
 .sw-pat { position: absolute; inset: 0; }
 .sw-panel { position: relative; display: flex; flex-direction: column; gap: 5px; height: 100%; padding: 9px 10px; }

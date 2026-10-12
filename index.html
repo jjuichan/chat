@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
   <link rel="stylesheet" href="css/app.css" />
   <link rel="stylesheet" href="css/card.css" />
+  <link rel="stylesheet" href="css/skins.css" />
 </head>
 <body>
   <!-- icon sprite -->
@@ -58,6 +59,11 @@
       <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3.5 6.5a2 2 0 0 1 2-2H10l2 2.5h6.5a2 2 0 0 1 2 2v8.5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/></symbol>
       <symbol id="i-history" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7L4 8.5M4 4v4.5h4.5M12 8v4.5l3 2"/></symbol>
       <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></symbol>
+      <symbol id="i-al-left" viewBox="0 0 24 24"><path d="M4 6h16M4 10h10M4 14h16M4 18h10"/></symbol>
+      <symbol id="i-al-center" viewBox="0 0 24 24"><path d="M4 6h16M7 10h10M4 14h16M7 18h10"/></symbol>
+      <symbol id="i-al-right" viewBox="0 0 24 24"><path d="M4 6h16M10 10h10M4 14h16M10 18h10"/></symbol>
+      <symbol id="i-al-justify" viewBox="0 0 24 24"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></symbol>
+      <symbol id="i-indent" viewBox="0 0 24 24"><path d="M11 6h9M11 10h9M4 14h16M4 18h16M4 6.5l3.5 2.5L4 11.5"/></symbol>
     </defs>
   </svg>
 
@@ -198,7 +204,12 @@
             <span class="sep"></span>
             <button data-fmt="split" title="커서 위치에서 블록 나누기"><svg><use href="#i-split"/></svg><span>나누기</span></button>
             <button data-fmt="merge" title="위 블록과 합치기"><svg><use href="#i-merge"/></svg><span>합치기</span></button>
-            <span class="fmt-hint" id="fmtHint">문장을 선택한 뒤 눌러 주세요</span>
+            <span class="sep"></span>
+            <button data-fmt="al-left" title="이 문단 왼쪽 정렬"><svg><use href="#i-al-left"/></svg></button>
+            <button data-fmt="al-center" title="이 문단 가운데 정렬"><svg><use href="#i-al-center"/></svg></button>
+            <button data-fmt="al-right" title="이 문단 오른쪽 정렬"><svg><use href="#i-al-right"/></svg></button>
+            <button data-fmt="al-justify" title="이 문단 양쪽 정렬"><svg><use href="#i-al-justify"/></svg></button>
+            <button data-fmt="indent" title="이 문단 첫 줄 들여쓰기 (누를 때마다 0 → 1 → 2em)"><svg><use href="#i-indent"/></svg></button>
           </div>
           <div class="block-list" id="blockList"></div>
           <div class="list-foot">
@@ -213,7 +224,7 @@
           <div class="page-head row">
             <div>
               <h2>화자</h2>
-              <p>이름 표기, 색상, 말풍선 위치, 아이콘을 화자별로 설정해요.</p>
+              <p>이름 표기, 색상, 프사를 화자별로 설정해요. 프사는 다이어리(폴라로이드)·플레이리스트(앨범 아트)·레트로 홈피(프로필)·메신저에 나오고, 다른 디자인은 디자인 › 레이아웃의 ‘이름 옆 프사’로 켤 수 있어요.</p>
             </div>
             <button class="btn btn-sm" id="btnAddSpeaker"><svg><use href="#i-plus"/></svg>화자 추가</button>
           </div>
@@ -283,7 +294,7 @@
                 </select>
               </label>
               <label class="field" data-show="style.layout=novel">
-                <span class="lbl">이름 옆 아이콘</span>
+                <span class="lbl">이름 옆 프사</span>
                 <label class="switch"><input type="checkbox" data-bind="style.names.avatar" /><i></i><span>표시</span></label>
               </label>
               <label class="field" data-show="style.layout=bubble">
@@ -404,6 +415,7 @@
               <span class="lbl">제목 장식</span>
               <div class="seg seg-wrap" data-bind="style.deco.ornament">
                 <button data-value="none">없음</button>
+                <button data-value="skin">템플릿 전용</button>
                 <button data-value="twist">두 가닥 실</button>
                 <button data-value="dots">세 점</button>
                 <button data-value="line">가는 선</button>
@@ -493,22 +505,30 @@
             <p class="hint">화자별 대사 색은 <a href="#" data-goto="speakers">화자</a> 탭에서 따로 정할 수 있어요.</p>
           </details>
           <details class="sec" open data-sec="narr">
-            <summary>서술문</summary>
+            <summary>문단 정렬 · 들여쓰기</summary>
+            <div class="field">
+              <span class="lbl">서술문 정렬</span>
+              <div class="seg" data-bind="style.narr.align">
+                <button data-value="left">왼쪽</button>
+                <button data-value="center">가운데</button>
+                <button data-value="right">오른쪽</button>
+                <button data-value="justify">양쪽</button>
+              </div>
+            </div>
+            <label class="field range"><span class="lbl">서술문 첫 줄 들여쓰기 <output></output></span><input type="range" min="0" max="4" step="0.5" data-bind="style.narr.indent" data-unit="em" /></label>
+            <div class="field" data-show="style.layout=novel">
+              <span class="lbl">대사 정렬</span>
+              <div class="seg" data-bind="style.dlgAlign">
+                <button data-value="left">왼쪽</button>
+                <button data-value="center">가운데</button>
+                <button data-value="right">오른쪽</button>
+              </div>
+            </div>
             <div class="field-grid">
-              <label class="field">
-                <span class="lbl">정렬</span>
-                <div class="seg" data-bind="style.narr.align">
-                  <button data-value="left">왼쪽</button>
-                  <button data-value="center">가운데</button>
-                  <button data-value="justify">양쪽</button>
-                </div>
-              </label>
-              <label class="field range"><span class="lbl">크기 비율 <output></output></span><input type="range" min="0.75" max="1.25" step="0.01" data-bind="style.narr.scale" data-unit="x" /></label>
+              <label class="field range"><span class="lbl">서술문 크기 <output></output></span><input type="range" min="0.75" max="1.25" step="0.01" data-bind="style.narr.scale" data-unit="x" /></label>
+              <label class="field"><span class="lbl">서술문 기울임</span><label class="switch"><input type="checkbox" data-bind="style.narr.italic" /><i></i><span>켜기</span></label></label>
             </div>
-            <div class="check-row">
-              <label class="switch"><input type="checkbox" data-bind="style.narr.italic" /><i></i><span>기울임</span></label>
-              <label class="switch"><input type="checkbox" data-bind="style.narr.indent" /><i></i><span>첫 줄 들여쓰기</span></label>
-            </div>
+            <p class="hint">문단 하나만 바꾸려면 본문 탭에서 블록을 고른 뒤 위쪽 정렬 버튼(<svg class="ic"><use href="#i-al-center"/></svg>)이나 블록 ⋯ 메뉴를 쓰세요.</p>
           </details>
           <details class="sec" open data-sec="emph">
             <summary>강조</summary>
@@ -620,6 +640,20 @@
     <button data-m="addBelow"><svg><use href="#i-plus"/></svg>아래에 블록 추가</button>
     <button data-m="dup"><svg><use href="#i-copy"/></svg>복제</button>
     <button data-m="merge"><svg><use href="#i-merge"/></svg>위 블록과 합치기</button>
+    <div class="menu-gap menu-align">
+      <span>정렬</span>
+      <button data-m="al-" title="기본">기본</button>
+      <button data-m="al-left" aria-label="왼쪽"><svg><use href="#i-al-left"/></svg></button>
+      <button data-m="al-center" aria-label="가운데"><svg><use href="#i-al-center"/></svg></button>
+      <button data-m="al-right" aria-label="오른쪽"><svg><use href="#i-al-right"/></svg></button>
+      <button data-m="al-justify" aria-label="양쪽"><svg><use href="#i-al-justify"/></svg></button>
+    </div>
+    <div class="menu-gap">
+      <span>첫 줄 들여쓰기</span>
+      <button data-m="indMinus" aria-label="줄이기">−</button>
+      <b id="menuInd">기본</b>
+      <button data-m="indPlus" aria-label="늘리기">+</button>
+    </div>
     <div class="menu-gap">
       <span>아래 간격</span>
       <button data-m="gapMinus" aria-label="간격 줄이기">−</button>
@@ -644,6 +678,7 @@
   <script src="js/presets.js"></script>
   <script src="js/parser.js"></script>
   <script src="js/render.js"></script>
+  <script src="js/skins.js"></script>
   <script src="js/editor.js"></script>
   <script src="js/panels.js"></script>
   <script src="js/export.js"></script>

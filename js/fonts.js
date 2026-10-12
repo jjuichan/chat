@@ -23,12 +23,31 @@
     'poor-story': { label: '푸어스토리', family: 'Poor Story', weights: [400], kind: 'hand', group: '손글씨 · 장식' },
     diphylleia: { label: '산하엽', family: 'Diphylleia', weights: [400], kind: 'serif', group: '손글씨 · 장식' },
     'do-hyeon': { label: '도현', family: 'Do Hyeon', weights: [400], kind: 'sans', group: '손글씨 · 장식' },
+    jua: { label: '주아 · 동글', family: 'Jua', weights: [400], kind: 'sans', group: '손글씨 · 장식' },
+    gamja: { label: '감자꽃 · 손글씨', family: 'Gamja Flower', weights: [400], kind: 'hand', group: '손글씨 · 장식' },
+    'single-day': { label: '싱글데이 · 귀여운', family: 'Single Day', weights: [400], kind: 'hand', group: '손글씨 · 장식' },
+    'cute-font': { label: '큐트폰트', family: 'Cute Font', weights: [400], kind: 'hand', group: '손글씨 · 장식' },
+    'yeon-sung': { label: '연성', family: 'Yeon Sung', weights: [400], kind: 'hand', group: '손글씨 · 장식' },
+    'black-han-sans': { label: '검은고딕 · 굵은', family: 'Black Han Sans', weights: [400], kind: 'sans', group: '손글씨 · 장식' },
+    dotgothic: { label: 'DotGothic16 · 픽셀', family: 'DotGothic16', weights: [400], kind: 'sans', group: '픽셀 · 타자기 · 모노', jp: true },
+    vt323: { label: 'VT323 · 픽셀', family: 'VT323', weights: [400], kind: 'mono', group: '픽셀 · 타자기 · 모노', latin: true },
+    silkscreen: { label: 'Silkscreen · 픽셀', family: 'Silkscreen', weights: [400], kind: 'mono', group: '픽셀 · 타자기 · 모노', latin: true },
+    'space-mono': { label: 'Space Mono · 모노', family: 'Space Mono', weights: [400, 700], kind: 'mono', group: '픽셀 · 타자기 · 모노', latin: true },
+    'ibm-mono': { label: 'IBM Plex Mono', family: 'IBM Plex Mono', weights: [400, 500], kind: 'mono', group: '픽셀 · 타자기 · 모노', latin: true },
+    'courier-prime': { label: 'Courier Prime · 타자기', family: 'Courier Prime', weights: [400, 700], kind: 'mono', group: '픽셀 · 타자기 · 모노', latin: true },
+    'special-elite': { label: 'Special Elite · 타자기', family: 'Special Elite', weights: [400], kind: 'mono', group: '픽셀 · 타자기 · 모노', latin: true },
     'zen-maru': { label: 'Zen Maru Gothic · 丸ゴ', family: 'Zen Maru Gothic', weights: [400, 500, 700], kind: 'sans', group: '일본어 · 영문', jp: true },
     'zen-kaku': { label: 'Zen Kaku Gothic · 角ゴ', family: 'Zen Kaku Gothic New', weights: [400, 500, 700], kind: 'sans', group: '일본어 · 영문', jp: true },
     shippori: { label: 'Shippori Mincho · 明朝', family: 'Shippori Mincho', weights: [400, 600, 700], kind: 'serif', group: '일본어 · 영문', jp: true },
     klee: { label: 'Klee One · 手書き風', family: 'Klee One', weights: [400, 600], kind: 'hand', group: '일본어 · 영문', jp: true },
     'kiwi-maru': { label: 'Kiwi Maru', family: 'Kiwi Maru', weights: [400, 500], kind: 'serif', group: '일본어 · 영문', jp: true },
     yomogi: { label: 'Yomogi · 手書き', family: 'Yomogi', weights: [400], kind: 'hand', group: '일본어 · 영문', jp: true },
+    'hachi-maru': { label: 'Hachi Maru Pop · まるもじ', family: 'Hachi Maru Pop', weights: [400], kind: 'hand', group: '일본어 · 영문', jp: true },
+    rocknroll: { label: 'RocknRoll One · ロック', family: 'RocknRoll One', weights: [400], kind: 'sans', group: '일본어 · 영문', jp: true },
+    'mochiy': { label: 'Mochiy Pop One · ポップ', family: 'Mochiy Pop One', weights: [400], kind: 'sans', group: '일본어 · 영문', jp: true },
+    'dela-gothic': { label: 'Dela Gothic One · 極太', family: 'Dela Gothic One', weights: [400], kind: 'sans', group: '일본어 · 영문', jp: true },
+    'dm-serif': { label: 'DM Serif Display', family: 'DM Serif Display', weights: [400], kind: 'serif', group: '일본어 · 영문', latin: true },
+    pinyon: { label: 'Pinyon Script · 필기체', family: 'Pinyon Script', weights: [400], kind: 'serif', group: '일본어 · 영문', latin: true },
     cormorant: { label: 'Cormorant Garamond', family: 'Cormorant Garamond', weights: [500, 600], kind: 'serif', group: '일본어 · 영문', latin: true },
     playfair: { label: 'Playfair Display', family: 'Playfair Display', weights: [500, 700], kind: 'serif', group: '일본어 · 영문', latin: true },
   };
@@ -40,7 +59,7 @@
     const fam = [`'${f.family}'`];
     if (f.jp || f.latin) fam.push(f.kind === 'serif' ? "'Noto Serif KR'" : "'Noto Sans KR'");
     else if (f.family !== 'Noto Sans KR') fam.push("'Noto Sans KR'");
-    fam.push(f.kind === 'serif' ? 'serif' : 'sans-serif');
+    fam.push(f.kind === 'serif' ? 'serif' : f.kind === 'mono' ? 'monospace' : 'sans-serif');
     return fam.join(', ');
   };
   // family names (incl. fallbacks) that need loading/embedding for a key
@@ -79,6 +98,9 @@
     const keys = [style.font.body, style.font.narr || style.font.body, style.font.name, style.font.title];
     const set = new Set();
     keys.forEach((k) => F.families(k).forEach((f) => set.add(f)));
+    // fixed decorative faces a template uses for its own labels
+    const skin = App.skins && App.skins[style.skin];
+    if (skin && skin.fonts) skin.fonts.forEach((k) => F.families(k).forEach((f) => set.add(f)));
     return Array.from(set);
   };
 
@@ -121,8 +143,13 @@
       const urls = Array.from(new Set((css.match(/url\(([^)]+)\)/g) || []).map((u) => u.slice(4, -1).replace(/['"]/g, ''))));
       let out = css;
       for (const u of urls) {
-        const data = await toDataURL(u);
-        out = out.split(u).join(data);
+        try {
+          const data = await toDataURL(u);
+          out = out.split(u).join(data);
+        } catch (e) {
+          // remove the @font-face that points at the unavailable file
+          out = out.replace(new RegExp('@font-face\\s*{[^}]*' + u.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[^}]*}', 'g'), '');
+        }
       }
       const range = unicodeRange(chars);
       return out.replace(/}/g, `  unicode-range: ${range};\n}`);
@@ -139,7 +166,11 @@
     for (let i = 0; i < chars.length; i += 240) chunks.push(chars.slice(i, i + 240));
     const jobs = [];
     families.forEach((fam) => chunks.forEach((ch) => jobs.push(subsetCSS(fam, ch))));
-    const parts = await Promise.all(jobs);
-    return parts.join('\n');
+    // A font that has none of the requested characters (e.g. a Latin script face asked for
+    // Hangul) answers with an error; skip those subsets instead of failing the whole export.
+    const parts = await Promise.allSettled(jobs);
+    const ok = parts.filter((r) => r.status === 'fulfilled').map((r) => r.value);
+    if (!ok.length && parts.length) throw new Error('no fonts could be embedded');
+    return ok.join('\n');
   };
 })();
