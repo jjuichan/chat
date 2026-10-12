@@ -103,18 +103,6 @@
       <g transform="translate(100 0)" fill="${c}"><path d="M0 7v12l10-6z"/><rect x="11.8" y="7" width="2.2" height="12"/></g>
       <path transform="translate(132 6) scale(.6)" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.2 0 3.6 1.2 5.3 3 1.7-1.8 3.1-3 5.3-3 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z" fill="${accent}"/></svg>`;
   }
-  function waxSeal(size, col) {
-    return `<svg width="${size}" height="${size}" viewBox="0 0 60 60" aria-hidden="true">
-      <path d="M30 2c5 0 6 3 10 4s7-1 9 3 1 6 3 9 6 5 5 10-4 5-4 9 3 7 0 10-6 2-9 4-4 6-9 6-6-3-10-4-7 1-9-3-1-6-3-9-6-5-5-10 4-5 4-9-3-7 0-10 6-2 9-4 4-8 9-8z" fill="${col}"/>
-      <circle cx="30" cy="30" r="18" fill="none" stroke="#000" stroke-opacity=".18" stroke-width="2"/>
-      <path transform="translate(18.5 18.5) scale(.96)" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.2 0 3.6 1.2 5.3 3 1.7-1.8 3.1-3 5.3-3 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z" fill="#000" fill-opacity=".22"/>
-      <path transform="translate(18 18) scale(.96)" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.2 0 3.6 1.2 5.3 3 1.7-1.8 3.1-3 5.3-3 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z" fill="#FFFFFF" fill-opacity=".28"/></svg>`;
-  }
-  function laceTile(fill, hole) {
-    return App.kit.svgURL(
-      `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="14" viewBox="0 0 24 14"><path d="M0 14 A12 12 0 0 1 24 14 Z" fill="${fill}"/><circle cx="12" cy="8.5" r="2" fill="${hole}"/><circle cx="5" cy="11.5" r="1" fill="${hole}"/><circle cx="19" cy="11.5" r="1" fill="${hole}"/></svg>`
-    );
-  }
   function safetyPin(len, col, rot) {
     return `<svg width="${len}" height="${Math.round(len * 0.3)}" viewBox="0 0 80 24" style="transform:rotate(${rot}deg)" aria-hidden="true">
       <path d="M10 12h56a8 8 0 0 0 0-8H8" fill="none" stroke="${col}" stroke-width="2.6" stroke-linecap="round"/>
@@ -212,39 +200,6 @@
     },
   };
 
-  /* ===================== Love Letter ===================== */
-  SKINS.letter = {
-    name: 'Love Letter',
-    fonts: ['pinyon', 'nanum-pen'],
-    panelTop: (ctx) => {
-      const fill = U.rgba(ctx.st.panel.color, ctx.st.panel.opacity);
-      return `<div class="skl-lace top" style="background-image:${laceTile(fill, ctx.st.bg.color)}"></div><div class="skl-lace bot" style="background-image:${laceTile(fill, ctx.st.bg.color)}"></div>`;
-    },
-    head(ctx) {
-      const x = t(ctx);
-      const [, b] = pair(ctx);
-      return `<header class="skl-head">
-        <div class="skl-seal">${waxSeal(64, C.ruby)}</div>
-        <div class="skl-dear">Dear my dearest${b ? ',' : ''}</div>
-        ${x.title ? `<h1 class="xc-title">${x.title}</h1>` : ''}
-        <div class="skl-line"><span>${x.sub}</span><span>${x.date}</span></div>
-      </header>`;
-    },
-    divider: () => `<span class="skl-div">${bow(34, C.ruby)}</span>`,
-    foot(ctx) {
-      const x = t(ctx);
-      let pearls = '';
-      for (let i = 0; i < 11; i++) pearls += `<i class="${i === 5 ? 'big' : ''}"></i>`;
-      return `<footer class="skl-foot"><div class="skl-with">with love,</div>${x.foot ? `<div class="skl-sign">${x.foot}</div>` : ''}<div class="skl-pearls">${pearls}</div></footer>`;
-    },
-    deco(ctx) {
-      // a single red string of fate running down the left margin
-      const tile = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="120" viewBox="0 0 16 120"><path d="M8 0 C 15 30, 1 60, 8 60 S 15 90, 8 120" fill="none" stroke="${C.ruby}" stroke-width="1.5"/></svg>`;
-      const m = ctx.st.panel.margin;
-      return `<div class="xd-thread" style="left:${Math.max(4, Math.round(m / 2 - 8))}px;top:${Math.round(m + 40)}px;bottom:${Math.round(m * 0.5)}px;background-image:${App.kit.svgURL(tile)};background-size:16px 120px"></div>`;
-    },
-  };
-
   /* ===================== Retro Personal Web ===================== */
   SKINS.retroweb = {
     name: 'Retro Personal Web',
@@ -304,6 +259,199 @@
         <span class="skx-tag" style="right:${Math.round(m + 26)}px;top:${Math.round(m - 14)}px">SWEET POISON</span>
         <span class="skx-st" style="left:${Math.round(m - 16)}px;bottom:${Math.round(m + 40)}px">${stitchedHeart(40, C.ruby, '#FFFFFF')}</span>
         <span class="skx-sp" style="right:${Math.round(m - 14)}px;bottom:${Math.round(m - 12)}px">${App.kit.icon(App.kit.SPARK, 22, '#C2C2CA', 0, 0.9)}</span>`;
+    },
+  };
+
+  /* ===================== Indie Zine ===================== */
+  // photocopied band zine: cut-out ransom-note title, staples, tape, halftone dots
+  function cutout(text) {
+    const looks = [
+      ['#29252B', '#FFFFFF', 'zf1', -3],
+      ['#FFFFFF', '#29252B', 'zf2', 2],
+      ['#FF8F91', '#29252B', 'zf1', -1],
+      ['#9B111E', '#FFFFFF', 'zf3', 3],
+      ['#F4F0E8', '#9B111E', 'zf2', -2],
+      ['#C2C2CA', '#29252B', 'zf3', 1],
+    ];
+    let k = 0;
+    return Array.from(text)
+      .map((ch) => {
+        if (/\s/.test(ch)) return '<span class="skz-sp"></span>';
+        const [bg, fg, f, r] = looks[k++ % looks.length];
+        return `<span class="skz-c ${f}" style="background:${bg};color:${fg};transform:rotate(${r}deg)">${esc(ch)}</span>`;
+      })
+      .join('');
+  }
+  function scissors(col) {
+    return `<svg width="22" height="16" viewBox="0 0 24 18" aria-hidden="true"><circle cx="5" cy="4.5" r="3.4" fill="none" stroke="${col}" stroke-width="1.8"/><circle cx="5" cy="13.5" r="3.4" fill="none" stroke="${col}" stroke-width="1.8"/><path d="M8 6.5L23 14M8 11.5L23 4" stroke="${col}" stroke-width="1.8" stroke-linecap="round"/></svg>`;
+  }
+  SKINS.zine = {
+    name: 'Indie Zine',
+    fonts: ['special-elite', 'black-han-sans', 'dela-gothic'],
+    panelTop: () => `<span class="skz-staple s1"></span><span class="skz-staple s2"></span>`,
+    head(ctx) {
+      const x = t(ctx);
+      const raw = ctx.meta.showTitle && ctx.meta.title ? ctx.meta.title.replace(/==|\*\*|__|~~/g, '') : '';
+      const no = (ctx.meta.date || '').replace(/[^\d]/g, '').slice(-4) || '0001';
+      return `<header class="skz-head">
+        <div class="skz-top"><span>R×E ZINE</span><span>VOL.${no.slice(0, 2)} — ISSUE ${no.slice(2)}</span><span>FREE / TAKE ONE</span></div>
+        ${raw ? `<h1 class="xc-title skz-title">${cutout(raw)}</h1>` : ''}
+        <div class="skz-tape">${x.sub || 'ずうっといっしょ！'}</div>
+        <div class="skz-date">${x.date ? `printed on ${x.date}` : ''}</div>
+      </header>`;
+    },
+    divider: () => `<span class="skz-div">${scissors('#29252B')}<i></i></span>`,
+    foot(ctx) {
+      const x = t(ctx);
+      return `<footer class="skz-foot"><span class="skz-stamp">R×E<br>RECORDS</span><div><b>${x.foot || 'Ritsu × Enju'}</b><span>photocopied with love · do not throw away</span></div></footer>`;
+    },
+    deco: (ctx) => {
+      const m = ctx.st.panel.margin;
+      return `<span class="skz-dots" style="right:${Math.round(m - 40)}px;top:${Math.round(m + 70)}px"></span><span class="skz-dots d2" style="left:${Math.round(m - 50)}px;bottom:${Math.round(m + 120)}px"></span>`;
+    },
+  };
+
+  /* ===================== Keitai Mail (ガラケー) ===================== */
+  function antenna(col) {
+    return pixel(['1........', '1.....1..', '1...1.1..', '1.1.1.1..', '1.1.1.1..'], 2, { 1: col });
+  }
+  function battery(col) {
+    return pixel(['111111111.', '1.1.1.1.11', '1.1.1.1.11', '111111111.'], 2, { 1: col });
+  }
+  function envelope(col) {
+    return `<svg width="18" height="13" viewBox="0 0 18 13" aria-hidden="true"><rect x=".8" y=".8" width="16.4" height="11.4" rx="1.5" fill="none" stroke="${col}" stroke-width="1.6"/><path d="M1.5 1.8L9 7.5l7.5-5.7" fill="none" stroke="${col}" stroke-width="1.6"/></svg>`;
+  }
+  SKINS.keitai = {
+    name: 'Keitai Mail',
+    fonts: ['dotgothic', 'vt323'],
+    namePrefix: (s) => `<span class="skr-ni">${heartPx(2, s.color.name)}</span>`,
+    head(ctx) {
+      const x = t(ctx);
+      const [a, b] = pair(ctx);
+      const nm = (s) => (s ? esc(s.nameJa || App.speakerLabel(s)) : '');
+      return `<header class="skk-head">
+        <div class="skk-status">${antenna('#29252B')}<span>R×E mobile</span><span class="skk-time">23:47</span>${battery('#29252B')}</div>
+        <div class="skk-bar">${envelope('#FFFFFF')}<span>受信メール</span><span class="skk-no">No.${String(ctx.state.blocks.length).padStart(3, '0')}</span></div>
+        <dl class="skk-meta">
+          <dt>From</dt><dd>${nm(a)} ${heartPx(2, '#FF8F91')}</dd>
+          <dt>To</dt><dd>${nm(b)}</dd>
+          <dt>Date</dt><dd>${x.date || '----/--/--'} 23:47</dd>
+          <dt>Sub</dt><dd class="sub">${x.title || '(件名なし)'}</dd>
+        </dl>
+        <div class="skk-deco">${starPx(2, '#FF8F91')}${heartPx(2, '#9B111E')}<span>${x.sub || 'ずうっといっしょ！'}</span>${heartPx(2, '#9B111E')}${starPx(2, '#FF8F91')}</div>
+      </header>`;
+    },
+    divider: () => `<span class="skk-div">${heartPx(2, '#FF8F91')}<i></i>${starPx(2, '#C2C2CA')}<i></i>${heartPx(2, '#9B111E')}</span>`,
+    foot(ctx) {
+      const x = t(ctx);
+      return `<footer class="skk-foot">${x.foot ? `<div class="skk-sig">-- ${x.foot} ${heartPx(2, '#FF8F91')}</div>` : ''}<div class="skk-keys"><span>返信</span><span class="dpad"><i></i></span><span>メニュー</span></div></footer>`;
+    },
+  };
+
+  /* ===================== Purikura (プリクラ) ===================== */
+  SKINS.purikura = {
+    name: 'Purikura',
+    fonts: ['hachi-maru', 'mochiy'],
+    head(ctx) {
+      const x = t(ctx);
+      const [a, b] = pair(ctx);
+      const shot = (s, i) =>
+        `<div class="skq-shot s${i}">${avatarBox(s, 'skq-photo')}<span class="skq-scr">${['ずっと♡', 'LOVE', 'いっしょ', '♡♡♡'][i]}</span>${i === 1 ? `<span class="skq-st">${starPx(3, '#FFFFFF')}</span>` : ''}</div>`;
+      return `<header class="skq-head">
+        <div class="skq-strip">${shot(a, 0)}${shot(b, 1)}${shot(a, 2)}${shot(b, 3)}</div>
+        <div class="skq-scribble">${x.date ? `${x.date}` : ''} ${heartPx(2, '#FF8F91')} ${x.sub || 'ずうっといっしょ！'}</div>
+        ${x.title ? `<h1 class="xc-title">${x.title}</h1>` : ''}
+      </header>`;
+    },
+    divider: () => `<span class="skq-div">${App.kit.icon(App.kit.SPARK, 14, '#FF8F91')}${App.kit.icon(App.kit.HEART, 16, '#9B111E')}${App.kit.icon(App.kit.SPARK, 14, '#C2C2CA')}</span>`,
+    foot(ctx) {
+      const x = t(ctx);
+      return `<footer class="skq-foot"><span class="skq-chk"></span><span class="skq-ft">PURIKURA ★ ${x.date || ''}</span><span class="skq-sign">${x.foot || 'Ritsu × Enju'}</span><span class="skq-chk"></span></footer>`;
+    },
+    over(ctx) {
+      const m = ctx.st.panel.margin;
+      const sp = (l, tp, sz, c, r) => `<span class="skq-sp" style="left:${l};top:${tp}">${App.kit.icon(App.kit.SPARK, sz, c, r, 0.95)}</span>`;
+      return (
+        sp(`${m - 16}px`, `${m - 16}px`, 34, '#FFFFFF', 0) +
+        sp(`calc(100% - ${m + 20}px)`, `${m + 120}px`, 26, '#FF8F91', 12) +
+        sp(`${m - 12}px`, `calc(100% - ${m + 70}px)`, 22, '#C2C2CA', 0) +
+        `<span class="skq-heart" style="right:${m - 18}px;bottom:${m - 20}px">${App.kit.icon(App.kit.HEART, 44, '#9B111E', -14)}</span>`
+      );
+    },
+  };
+
+  /* ===================== Live Ticket ===================== */
+  function qr(n, col, seed) {
+    const rnd = seeded(seed || 11);
+    const rows = [];
+    for (let y = 0; y < n; y++) {
+      let r = '';
+      for (let x = 0; x < n; x++) {
+        const finder = (x < 3 && y < 3) || (x >= n - 3 && y < 3) || (x < 3 && y >= n - 3);
+        r += finder ? (x % (n - 3) === 1 && y % (n - 3) === 1 ? '.' : '1') : rnd() > 0.52 ? '1' : '.';
+      }
+      rows.push(r);
+    }
+    return pixel(rows, 3, { 1: col });
+  }
+  SKINS.ticket = {
+    name: 'Live Ticket',
+    fonts: ['space-mono', 'dela-gothic'],
+    head(ctx) {
+      const x = t(ctx);
+      const no = (ctx.meta.date || '').replace(/[^\d]/g, '').slice(-4) || '0412';
+      return `<header class="skt-head">
+        <div class="skt-main">
+          <div class="skt-kicker">RITSU × ENJU — ONE MAN LIVE</div>
+          ${x.title ? `<h1 class="xc-title">${x.title}</h1>` : ''}
+          <div class="skt-sub">${x.sub || 'ずうっといっしょ！'}</div>
+          <div class="skt-grid">
+            <div><span>DATE</span><b>${x.date || '----.--.--'}</b></div>
+            <div><span>OPEN / START</span><b>18:00 / 19:00</b></div>
+            <div><span>VENUE</span><b>SHIMOKITA LOFT</b></div>
+            <div><span>SEAT</span><b>A列 ${Number(no.slice(-2)) || 12}番</b></div>
+          </div>
+        </div>
+        <div class="skt-stub">
+          <span class="skt-admit">ADMIT<br>ONE</span>
+          ${qr(17, '#29252B', ctx.state.blocks.length + 5)}
+          <span class="skt-no">No.${no}</span>
+        </div>
+        <span class="skt-notch n1"></span><span class="skt-notch n2"></span>
+      </header>
+      <div class="skt-set"><span>SETLIST</span><i></i><span>♪</span></div>`;
+    },
+    divider: () => `<span class="skt-div"><i></i><b>♪ ENCORE ♪</b><i></i></span>`,
+    foot(ctx) {
+      const x = t(ctx);
+      return `<footer class="skt-foot"><span class="skt-perf"></span><div class="skt-fl"><b>${x.foot || 'Ritsu × Enju'}</b><span>再入場不可 · NO RE-ENTRY · 整理番号 A-012</span></div>${barcode(110, 34, '#29252B', 21)}</footer>`;
+    },
+  };
+
+  /* ===================== Messenger (chat app) ===================== */
+  function chev(col) {
+    return `<svg width="12" height="20" viewBox="0 0 12 20" aria-hidden="true"><path d="M10 2L2 10l8 8" fill="none" stroke="${col}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  }
+  SKINS.messenger = {
+    name: 'Messenger',
+    head(ctx) {
+      const x = t(ctx);
+      const ps = pair(ctx);
+      const names = ps.map((s) => esc(App.speakerLabel(s))).join(', ');
+      return `<header class="skm-head">
+        <div class="skm-bar">
+          ${chev('#29252B')}
+          <span class="skm-avs">${ps.map((s) => avatarBox(s, 'skm-av')).join('')}</span>
+          <div class="skm-who"><b>${x.title || names}</b><span><i></i>${names} · online</span></div>
+          <span class="skm-icons">${App.kit.icon(App.kit.HEART, 20, '#FF8F91')}</span>
+        </div>
+        <div class="skm-day"><span>${x.date || ''}</span>${x.sub ? `<span class="skm-tag">${x.sub}</span>` : ''}</div>
+      </header>`;
+    },
+    divider: () => `<span class="skm-div"><i></i><b>· · ·</b><i></i></span>`,
+    foot(ctx) {
+      const x = t(ctx);
+      return `<footer class="skm-foot"><span class="skm-plus">+</span><span class="skm-field">${x.foot ? x.foot + '에게 메시지 보내기…' : '메시지 입력…'}</span><span class="skm-send"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l16-8-6 16-3-6z" fill="#FFFFFF"/></svg></span></footer>`;
     },
   };
 

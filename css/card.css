@@ -142,8 +142,8 @@
 .ly-bubble .side-left:not(.cont) .xb-bubble { border-top-left-radius: 5px; }
 .ly-bubble .side-right:not(.cont) .xb-bubble { border-top-right-radius: 5px; }
 .ly-bubble .xb-dlg.cont { margin-top: calc(var(--gap) * -0.55); }
-.ly-bubble .xb-narr { max-width: 86%; margin-left: auto; margin-right: auto; }
-.ly-bubble .xb-narr:not(.is-emph) { text-align: center; }
+/* narration between bubbles follows the normal paragraph alignment (left by default) */
+.ly-bubble .xb-narr { color: var(--narr); }
 .xb-av {
   flex: none; display: block; width: 40px; height: 40px; border-radius: 50%;
   background-color: var(--sp-name); background-size: cover; background-position: center;

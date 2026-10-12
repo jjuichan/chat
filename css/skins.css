@@ -79,24 +79,6 @@
 .skp-foot div span { color: #C2C2CA; font-size: 12px; font-family: var(--f-title); letter-spacing: .04em; }
 .skp-vol { margin-left: auto; }
 
-/* ---------------- Love Letter ---------------- */
-.sk-letter .xc-panel { padding-top: calc(var(--pad) + 16px); }
-.skl-lace { position: absolute; left: 0; right: 0; height: 14px; background-repeat: repeat-x; background-size: 24px 14px; background-position: center; }
-.skl-lace.top { top: -14px; }
-.skl-lace.bot { bottom: -14px; transform: scaleY(-1); }
-.skl-head { text-align: center; margin-bottom: 34px; position: relative; }
-.skl-seal { line-height: 0; margin: -68px auto 14px; width: 64px; }
-.skl-dear { font-family: 'Pinyon Script', cursive; font-size: 30px; color: #9B111E; line-height: 1.2; }
-.sk-letter .xc-title { margin: 10px 0 14px; line-height: 1.35; }
-.skl-line { display: flex; justify-content: space-between; gap: 10px; border-top: 1px solid #EBC9CC; border-bottom: 1px solid #EBC9CC; padding: 7px 2px; font-size: 12.5px; color: #A88A90; letter-spacing: .08em; line-height: 1.4; }
-.skl-div { line-height: 0; display: inline-block; }
-.skl-foot { margin-top: 40px; text-align: right; }
-.skl-with { font-family: 'Pinyon Script', cursive; font-size: 26px; color: #9B111E; line-height: 1.2; }
-.skl-sign { font-family: 'Nanum Pen Script', var(--f-title); font-size: 30px; color: #3B2A2E; line-height: 1.2; margin-top: 2px; }
-.skl-pearls { display: flex; justify-content: center; align-items: center; gap: 5px; margin-top: 24px; }
-.skl-pearls i { display: block; width: 9px; height: 9px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #FFFFFF 0 18%, #EDE6EA 45%, #C2C2CA 100%); box-shadow: 0 1px 1px rgba(0, 0, 0, .15); }
-.skl-pearls i.big { width: 14px; height: 14px; }
-
 /* ---------------- Retro Personal Web ---------------- */
 .sk-retroweb .xc-panel { padding: 0 0 22px; }
 .sk-retroweb .xc-body, .sk-retroweb .xc-comment { margin-left: 30px; margin-right: 30px; }
@@ -154,3 +136,132 @@
 .skx-foot span { color: #8E848A; font-size: 10.5px; letter-spacing: .14em; }
 .skx-pin, .skx-st, .skx-sp { position: absolute; z-index: 5; line-height: 0; }
 .skx-tag { position: absolute; z-index: 5; background: #9B111E; color: #FFFFFF; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 12px; letter-spacing: .2em; line-height: 1.2; padding: 5px 12px; transform: rotate(4deg); box-shadow: 3px 3px 0 #000000; border: 1.5px solid #000000; }
+
+/* ---------------- Indie Zine ---------------- */
+.skz-staple { position: absolute; top: 14px; width: 34px; height: 5px; border-radius: 2px; background: linear-gradient(#E4E4EA, #9A9AA4); box-shadow: 0 1px 1px rgba(0, 0, 0, .3); }
+.skz-staple.s1 { left: 22%; transform: rotate(-4deg); }
+.skz-staple.s2 { right: 22%; transform: rotate(3deg); }
+.skz-head { margin-bottom: 34px; }
+.skz-top { display: flex; justify-content: space-between; gap: 10px; white-space: nowrap; border-top: 3px solid #29252B; border-bottom: 1px solid #29252B; padding: 6px 0; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .08em; color: #29252B; line-height: 1.4; }
+.skz-title { display: flex; flex-wrap: wrap; gap: 6px 4px; margin: 26px 0 16px; line-height: 1; }
+.skz-c { display: inline-block; padding: 7px 8px 6px; font-size: var(--fs-title); line-height: 1; box-shadow: 2px 2px 0 rgba(0, 0, 0, .18); }
+.skz-c.zf1 { font-family: 'Black Han Sans', var(--f-title); }
+.skz-c.zf2 { font-family: 'Noto Serif KR', serif; font-weight: 700; }
+.skz-c.zf3 { font-family: 'Dela Gothic One', 'Black Han Sans', var(--f-title); }
+.skz-sp { display: inline-block; width: 12px; }
+.skz-tape { display: inline-block; padding: 5px 16px; background: rgba(255, 143, 145, .62); color: #29252B; font-family: 'Special Elite', var(--f-title); font-size: 14px; letter-spacing: .08em; transform: rotate(-1.5deg); line-height: 1.4; background-image: repeating-linear-gradient(90deg, rgba(255, 255, 255, .25) 0 3px, transparent 3px 7px); }
+.skz-date { margin-top: 12px; font-family: 'Special Elite', monospace; font-size: 12.5px; color: #6B666C; line-height: 1.4; }
+.skz-div { display: flex; align-items: center; gap: 6px; width: 100%; }
+.skz-div svg { display: block; }
+.skz-div i { display: block; flex: 1; border-top: 2px dashed #29252B; }
+.skz-foot { display: flex; align-items: center; gap: 16px; margin-top: 40px; padding-top: 16px; border-top: 3px solid #29252B; }
+.skz-stamp { display: flex; align-items: center; justify-content: center; text-align: center; width: 66px; height: 66px; border-radius: 50%; border: 2.5px solid #9B111E; color: #9B111E; font-family: 'Special Elite', monospace; font-size: 11px; line-height: 1.15; transform: rotate(-12deg); flex: none; }
+.skz-foot div { display: flex; flex-direction: column; line-height: 1.5; }
+.skz-foot b { font-family: 'Special Elite', var(--f-title); font-size: 16px; color: #29252B; font-weight: 400; }
+.skz-foot span { font-family: 'Special Elite', monospace; font-size: 11.5px; color: #6B666C; }
+.skz-dots { position: absolute; width: 130px; height: 130px; border-radius: 50%; background-image: radial-gradient(#FF8F91 32%, transparent 36%); background-size: 9px 9px; opacity: .8; }
+.skz-dots.d2 { width: 100px; height: 100px; background-image: radial-gradient(#29252B 26%, transparent 30%); opacity: .35; }
+
+/* ---------------- Keitai Mail ---------------- */
+.sk-keitai .xc-panel { padding: 0 0 0; overflow: hidden; }
+.sk-keitai .xc-body, .sk-keitai .xc-comment { margin-left: 30px; margin-right: 30px; }
+.skk-status { display: flex; align-items: center; gap: 10px; white-space: nowrap; padding: 8px 14px; background: #EDEBEF; border-bottom: 1px solid #D6D3DA; font-family: 'DotGothic16', monospace; font-size: 12px; color: #29252B; line-height: 1; }
+.skk-status svg { display: block; }
+.skk-time { margin-left: auto; font-family: 'VT323', monospace; font-size: 17px; }
+.skk-bar { display: flex; align-items: center; gap: 8px; padding: 7px 14px; background: linear-gradient(#FFA9AB, #FF8F91 55%, #F07478); color: #FFFFFF; font-family: 'DotGothic16', monospace; font-size: 14px; letter-spacing: .1em; line-height: 1.2; }
+.skk-bar svg { display: block; }
+.skk-no { margin-left: auto; font-size: 12px; opacity: .9; }
+.skk-meta { display: grid; grid-template-columns: 54px 1fr; margin: 0; padding: 12px 30px 14px; border-bottom: 2px dotted #FF8F91; font-size: 14px; line-height: 1.75; color: #3C3640; }
+.skk-meta dt { font-family: 'DotGothic16', monospace; color: #9A95A0; font-size: 12.5px; }
+.skk-meta dd { margin: 0; display: flex; align-items: center; gap: 6px; min-width: 0; }
+.skk-meta dd svg { display: block; }
+.skk-meta dd.sub { font-weight: 700; color: #29252B; font-family: var(--f-title); font-size: var(--fs-title); line-height: 1.35; }
+.skk-deco { display: flex; align-items: center; justify-content: flex-start; gap: 6px; padding: 14px 30px 0; margin-bottom: 30px; font-family: 'DotGothic16', var(--f-title); font-size: 13px; color: #F07478; line-height: 1.4; }
+.skk-deco svg { display: block; }
+.skk-div { display: flex; align-items: center; gap: 8px; width: 100%; }
+.skk-div svg { display: block; }
+.skk-div i { display: block; flex: 1; border-top: 2px dotted #F4C2C2; }
+.skk-foot { margin-top: 34px; }
+.skk-sig { margin: 0 30px 18px; font-family: 'DotGothic16', var(--f-title); font-size: 14px; color: #6B6670; display: flex; align-items: center; gap: 6px; line-height: 1.4; }
+.skk-sig svg { display: block; }
+.skk-keys { display: flex; align-items: center; justify-content: space-between; padding: 10px 26px; background: linear-gradient(#F4F3F6, #DCDAE0); border-top: 1px solid #C2C2CA; font-family: 'DotGothic16', monospace; font-size: 13px; color: #29252B; line-height: 1; }
+.skk-keys .dpad { width: 38px; height: 26px; border-radius: 50%; background: radial-gradient(circle, #FFFFFF 0 7px, #C2C2CA 8px 9px, #EDEBEF 10px); box-shadow: inset 0 0 0 1px #A9A6AE; display: block; }
+
+/* ---------------- Purikura ---------------- */
+.skq-head { margin-bottom: 30px; }
+.skq-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 8px; background: #FFFFFF; border-radius: 14px; box-shadow: 0 0 0 2px #FFD4D5, 0 8px 18px rgba(155, 17, 30, .12); }
+.skq-shot { position: relative; aspect-ratio: 3 / 4; border-radius: 10px; overflow: hidden; }
+.skq-photo { position: absolute; inset: 0; display: block; background-size: cover; background-position: center; }
+.skq-photo.is-init { display: flex; align-items: center; justify-content: center; font-family: var(--f-title); font-size: 34px; }
+.skq-shot.s1 .skq-photo, .skq-shot.s3 .skq-photo { filter: saturate(1.15) brightness(1.04); }
+.skq-scr { position: absolute; left: 6px; bottom: 6px; font-family: 'Hachi Maru Pop', cursive; font-size: 13px; color: #FFFFFF; line-height: 1.2;
+  text-shadow: 1.5px 0 0 #FF6F7A, -1.5px 0 0 #FF6F7A, 0 1.5px 0 #FF6F7A, 0 -1.5px 0 #FF6F7A, 1px 1px 0 #FF6F7A, -1px -1px 0 #FF6F7A, 1px -1px 0 #FF6F7A, -1px 1px 0 #FF6F7A; }
+.skq-st { position: absolute; right: 6px; top: 6px; line-height: 0; }
+.skq-scribble { margin: 16px 2px 4px; font-family: 'Hachi Maru Pop', var(--f-title); font-size: 14px; color: #F07478; display: flex; align-items: center; gap: 6px; line-height: 1.5; }
+.skq-scribble svg { display: block; }
+.sk-purikura .xc-title { color: #FFFFFF; margin: 4px 0 0; line-height: 1.3;
+  text-shadow: 2px 0 0 #FF6F7A, -2px 0 0 #FF6F7A, 0 2px 0 #FF6F7A, 0 -2px 0 #FF6F7A, 2px 2px 0 #FF6F7A, -2px -2px 0 #FF6F7A, 2px -2px 0 #FF6F7A, -2px 2px 0 #FF6F7A, 4px 4px 0 #9B111E; }
+.skq-div { display: inline-flex; align-items: center; gap: 10px; }
+.skq-div svg { display: block; }
+.skq-foot { display: flex; align-items: center; gap: 10px; margin-top: 36px; }
+.skq-chk { display: block; width: 26px; height: 18px; background-image: linear-gradient(45deg, #FF8F91 25%, transparent 25%, transparent 75%, #FF8F91 75%), linear-gradient(45deg, #FF8F91 25%, transparent 25%, transparent 75%, #FF8F91 75%); background-size: 9px 9px; background-position: 0 0, 4.5px 4.5px; flex: none; }
+.skq-ft { font-family: 'Mochiy Pop One', var(--f-title); font-size: 12px; color: #FF6F7A; letter-spacing: .08em; line-height: 1.4; }
+.skq-sign { margin-left: auto; font-family: 'Hachi Maru Pop', var(--f-title); font-size: 15px; color: #9B111E; line-height: 1.4; }
+.skq-sp, .skq-heart { position: absolute; z-index: 5; line-height: 0; }
+
+/* ---------------- Live Ticket ---------------- */
+.sk-ticket .xc-panel { padding: 0 0 28px; }
+.sk-ticket .xc-body, .sk-ticket .xc-comment { margin-left: 38px; margin-right: 38px; }
+.skt-head { position: relative; display: flex; background: #29252B; color: #FFFFFF; border-radius: var(--panel-r) var(--panel-r) 0 0; }
+.skt-main { flex: 1; min-width: 0; padding: 26px 26px 22px 38px; }
+.skt-kicker { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: .22em; color: #FF8F91; line-height: 1.4; }
+.sk-ticket .xc-title { color: #FFFFFF; margin: 10px 0 4px; line-height: 1.25; }
+.skt-sub { font-family: 'Dela Gothic One', var(--f-title); font-size: 14px; color: #C2C2CA; letter-spacing: .06em; line-height: 1.4; }
+.skt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 18px; margin-top: 20px; padding-top: 14px; border-top: 1px dashed #5A535C; }
+.skt-grid div { display: flex; flex-direction: column; line-height: 1.35; }
+.skt-grid span { font-family: 'Space Mono', monospace; font-size: 9.5px; letter-spacing: .2em; color: #8F8794; }
+.skt-grid b { font-family: 'Space Mono', var(--f-body); font-size: 14px; font-weight: 700; color: #FFFFFF; }
+.skt-stub { width: 132px; flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: #9B111E; border-left: 2px dashed #FFF9F8; border-radius: 0 var(--panel-r) 0 0; padding: 18px 10px; }
+.skt-stub svg { display: block; background: #FFFFFF; padding: 4px; box-sizing: content-box; }
+.skt-admit { font-family: 'Dela Gothic One', sans-serif; font-size: 16px; line-height: 1.05; text-align: center; letter-spacing: .06em; }
+.skt-no { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: .14em; line-height: 1; }
+.skt-notch { position: absolute; width: 22px; height: 22px; border-radius: 50%; background: var(--bg); right: 121px; }
+.skt-notch.n1 { top: -11px; }
+.skt-notch.n2 { bottom: -11px; }
+.skt-set { display: flex; align-items: center; gap: 10px; margin: 28px 38px 26px; font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: .3em; color: #9B111E; font-weight: 700; line-height: 1.4; }
+.skt-set i { display: block; flex: 1; border-top: 2px solid #29252B; }
+.skt-div { display: flex; align-items: center; gap: 12px; width: 100%; }
+.skt-div i { display: block; flex: 1; border-top: 1px solid #C2C2CA; }
+.skt-div b { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: .24em; color: #9B111E; line-height: 1; }
+.skt-foot { position: relative; display: flex; align-items: center; gap: 16px; margin: 36px 38px 0; padding-top: 22px; }
+.skt-perf { position: absolute; left: -38px; right: -38px; top: 0; border-top: 2px dashed #C2C2CA; }
+.skt-fl { flex: 1; display: flex; flex-direction: column; line-height: 1.5; }
+.skt-fl b { font-family: var(--f-title); font-size: 16px; color: #29252B; }
+.skt-fl span { font-family: 'Space Mono', var(--f-body); font-size: 10.5px; color: #8F8794; letter-spacing: .06em; }
+.skt-foot svg { display: block; }
+
+/* ---------------- Messenger ---------------- */
+.sk-messenger .xc-panel { padding: 0; overflow: hidden; }
+.sk-messenger .xc-body, .sk-messenger .xc-comment { margin-left: 22px; margin-right: 22px; }
+.skm-bar { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: #FFFFFF; border-bottom: 1px solid #EDE6E8; }
+.skm-bar svg { display: block; }
+.skm-avs { display: flex; flex: none; }
+.skm-av { display: block; width: 38px; height: 38px; border-radius: 50%; background-size: cover; background-position: center; border: 2px solid #FFFFFF; }
+.skm-av + .skm-av { margin-left: -12px; }
+.skm-av.is-init { display: flex; align-items: center; justify-content: center; font-family: var(--f-name); font-weight: 700; font-size: 15px; }
+.skm-who { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.35; }
+.skm-who b { font-family: var(--f-title); font-size: 17px; color: #29252B; }
+.skm-who span { display: flex; align-items: center; gap: 5px; font-size: 12.5px; color: #8E868A; }
+.skm-who i { display: block; width: 7px; height: 7px; border-radius: 50%; background: #5CC98A; }
+.skm-icons { line-height: 0; }
+.skm-day { display: flex; align-items: center; gap: 8px; padding: 18px 22px 22px; }
+.skm-day span { font-size: 12px; color: #8E868A; background: #FFFFFF; border: 1px solid #EDE6E8; padding: 3px 11px; border-radius: 999px; line-height: 1.4; }
+.skm-day .skm-tag { color: #F07478; border-color: #FFD4D5; background: #FFF4F4; }
+.skm-div { display: flex; align-items: center; gap: 10px; width: 100%; }
+.skm-div i { display: block; flex: 1; border-top: 1px solid #E4DCDF; }
+.skm-div b { color: #B3A9AD; font-size: 13px; line-height: 1; font-weight: 400; }
+.skm-foot { display: flex; align-items: center; gap: 10px; margin-top: 28px; padding: 12px 16px; background: #FFFFFF; border-top: 1px solid #EDE6E8; }
+.skm-plus { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: #F4F1F3; color: #8E868A; font-size: 20px; line-height: 1; flex: none; }
+.skm-field { flex: 1; min-width: 0; padding: 8px 14px; border-radius: 999px; background: #F4F1F3; color: #A9A1A5; font-size: 13.5px; line-height: 1.4; white-space: nowrap; overflow: hidden; }
+.skm-send { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: #FF8F91; flex: none; }
+.skm-send svg { display: block; }
