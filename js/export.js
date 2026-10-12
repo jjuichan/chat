@@ -34,6 +34,12 @@
     const plan = App.exportPlan();
     await document.fonts.ready;
     let fontCSS = '';
+    // The card's own stylesheet goes into the image too, and elements are NOT pinned to the
+    // pixel widths measured in the preview. Text can render a hair wider inside the exported
+    // SVG (device pixel ratio, font hinting), and a pinned width then breaks short labels and
+    // speech bubbles onto a second line. Sizes from the stylesheet still apply.
+    const cardCSS = readCardCSS();
+    window.__h2iFreeSize = !!cardCSS;
     try {
       fontCSS = await App.fonts.embedCSS(card, App.fonts.usedFamilies(App.state.style));
     } catch (e) {
@@ -45,7 +51,7 @@
       pixelRatio: plan.scale,
       width: plan.w,
       height: plan.h,
-      fontEmbedCSS: fontCSS,
+      fontEmbedCSS: fontCSS + '\n' + cardCSS,
       skipAutoScale: true,
       cacheBust: false,
       style: { boxShadow: 'none', margin: '0' },
@@ -59,7 +65,22 @@
       return { blob, plan };
     } finally {
       card.classList.remove('exporting');
+      window.__h2iFreeSize = false;
     }
+  }
+
+  // rules from card.css / skins.css (same-origin sheets; unreadable on file:// → old behaviour)
+  function readCardCSS() {
+    let css = '';
+    try {
+      Array.from(document.styleSheets).forEach((sh) => {
+        if (!sh.href || !/\/css\/(card|skins)\.css/.test(sh.href)) return;
+        css += Array.from(sh.cssRules).map((r) => r.cssText).join('\n') + '\n';
+      });
+    } catch (e) {
+      return '';
+    }
+    return css;
   }
 
   async function withOverlay(msg, fn) {

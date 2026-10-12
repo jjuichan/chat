@@ -97,7 +97,7 @@
 /* speaker names */
 .xb-name {
   font-family: var(--f-name); font-size: var(--fs-name); font-weight: 700;
-  color: var(--sp-name); letter-spacing: .06em; line-height: 1.5; font-style: normal;
+  color: var(--sp-name); letter-spacing: .06em; line-height: 1.5; font-style: normal; white-space: nowrap;
 }
 .ns-pill .xb-name { display: inline-block; background: var(--sp-name); color: var(--sp-on); padding: 1px 11px 2px; border-radius: 999px; letter-spacing: .04em; }
 .ns-underline .xb-name { display: inline-block; border-bottom: 2px solid var(--sp-name); padding-bottom: 1px; }
