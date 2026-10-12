@@ -13,7 +13,7 @@
     q: '',
     editing: null,
     openEv: new Set(),
-    target: 'ritsu',
+    target: 'both', // whose facts to collect: 'both' lets Gemini sort them
     pickChar: 'ritsu',
     draftLogId: null, // log saved from the current textarea contents
     review: null, // { logId, charId, items, loading, error }
@@ -558,7 +558,7 @@
     const b = e.target.closest('button');
     if (!b) return;
     view.target = b.dataset.value;
-    view.pickChar = b.dataset.value;
+    if (N.CHARS[view.target]) view.pickChar = view.target;
     renderCollect();
   });
   logInput.addEventListener('input', () => {
@@ -683,7 +683,7 @@
         // the same fact can come back from several pieces
         const seen = new Set();
         r.items = found.filter((it) => {
-          const k = it.relation === 'same' ? 'same:' + it.relatedId : U.norm(it.text);
+          const k = it.relation === 'same' ? 'same:' + it.relatedId : it.char + ':' + U.norm(it.text);
           if (seen.has(k)) return false;
           seen.add(k);
           return true;
@@ -728,7 +728,7 @@
       return;
     }
     card.hidden = false;
-    const c = N.CHARS[r.charId];
+    const c = { name: targetName(r.charId) };
     const title = esc(logTitle(r.logId) || '');
     if (r.loading) {
       card.innerHTML = r.progress
@@ -758,14 +758,18 @@
     const on = r.items.filter((i) => i.on).length;
     const kinds = { new: 0, same: 0, conflict: 0 };
     r.items.forEach((i) => kinds[i.relation]++);
+    const per = Object.keys(N.CHARS)
+      .map((id) => [id, r.items.filter((i) => i.char === id).length])
+      .filter(([, n]) => n);
+    const perText = per.length > 1 ? ` <small class="hint">(${per.map(([id, n]) => `${N.CHARS[id].name} ${n}`).join(' · ')})</small>` : '';
     card.innerHTML = `
       <div class="review-head">
-        <div><h2 class="card-title">${esc(c.name)} 설정 후보 ${r.items.length}개</h2>
+        <div><h2 class="card-title">${esc(c.name)} 설정 후보 ${r.items.length}개${perText}</h2>
         <span class="hint">✨ 새 설정 ${kinds.new} · 재확인 ${kinds.same} · ⚠ 모순 ${kinds.conflict} — 「${title}」 · ${keyLabel(r.keyUsed)}</span></div>
         <button class="btn btn-sm btn-ghost" data-act="toggle-all">${on === r.items.length ? '모두 해제' : '모두 선택'}</button>
       </div>
       ${blockedNote}
-      ${r.items.map((it) => candCard(it, r.charId)).join('')}
+      ${r.items.map((it) => candCard(it)).join('')}
       <div class="review-foot">
         <button class="btn btn-ghost" data-act="close-review">버리기</button>
         <button class="btn" data-act="read"><svg><use href="#i-book"/></svg>대화 읽으며 더 고르기</button>
@@ -773,12 +777,19 @@
       </div>`;
   }
 
+  const targetName = (t) => (N.CHARS[t] ? N.CHARS[t].name : '리츠·엔쥬');
+
   function keyLabel(k) {
     return { free: '무료 키 사용', paid: '🔒 유료 키 사용', fallback: '무료 한도 초과 → 유료 키 사용' }[k] || '';
   }
 
-  function candCard(it, charId) {
+  function candCard(it) {
+    const charId = it.char;
     const rel = it.relatedId && N.state.facts[it.relatedId];
+    // whose fact this is — Gemini's guess, one tap to correct
+    const whose = `<div class="seg seg-sm who" title="누구 설정인지">${Object.values(N.CHARS)
+      .map((c) => `<button data-act="set-char" data-value="${c.id}" class="w-${c.id}${c.id === charId ? ' on' : ''}">${esc(c.name)}</button>`)
+      .join('')}</div>`;
     let relHtml = `<span class="badge new">✨ 새 설정</span>`;
     if (it.relation === 'same' && rel) relHtml = `<span class="badge seen">재확인</span><span>이미 있는 설정: <b>${esc(rel.text)}</b> — 근거만 추가돼요</span>`;
     if (it.relation === 'conflict' && rel)
@@ -788,7 +799,7 @@
       <input type="checkbox" class="check" data-act="toggle"${it.on ? ' checked' : ''} aria-label="저장할지 선택" />
       <div class="cand-body">
         ${editable ? `<div class="cand-row"><input type="text" data-field="text" value="${esc(it.text)}" /><select data-field="cat">${catOptions(it.cat, charId)}</select></div>` : ''}
-        <div class="cand-rel">${relHtml}</div>
+        <div class="cand-rel">${whose}${relHtml}</div>
         ${it.quote ? `<blockquote class="quote">${esc(it.quote)}</blockquote>` : ''}
         ${it.quote && !it.quoteFound ? `<span class="badge warn"><svg><use href="#i-alert"/></svg>원문에서 이 대사를 못 찾았어요 — AI가 지어냈을 수 있으니 확인해 주세요</span>` : ''}
       </div>
@@ -821,6 +832,19 @@
       return renderReview();
     }
     if (act === 'retry') return runExtract(r.logId, r.charId);
+    if (act === 'set-char') {
+      const it = r.items.find((i) => i.key === b.closest('.cand').dataset.key);
+      if (!it || it.char === b.dataset.value) return;
+      it.char = b.dataset.value;
+      // a match against the other person's fact no longer applies
+      const rel = it.relatedId && N.state.facts[it.relatedId];
+      if (rel && rel.char !== it.char) {
+        if (it.relation === 'same') it.text = it.text || rel.text;
+        it.relation = 'new';
+        it.relatedId = null;
+      }
+      return renderReview();
+    }
     if (act === 'read') return openReader(r.logId);
     if (act === 'read-blocked') return openReader(r.logId, null, true);
     if (act === 'stop') {
@@ -854,7 +878,7 @@
           again++;
           return;
         }
-        const f = N.addFact(s, { char: r.charId, cat: it.cat, text: it.text.trim(), status: 'open', fresh: true, src: 'ai', evidence: ev });
+        const f = N.addFact(s, { char: it.char, cat: it.cat, text: it.text.trim(), status: 'open', fresh: true, src: 'ai', evidence: ev });
         if (it.relation === 'conflict' && rel) {
           N.linkConflict(s, f.id, rel.id, it.reason);
           conflicts++;
@@ -862,7 +886,8 @@
       });
       if (s.logs[r.logId]) Object.assign(s.logs[r.logId], { extractedAt: now, updatedAt: now });
     });
-    const charId = r.charId;
+    const savedFor = chosen.map((i) => i.char);
+    const charId = savedFor.includes('ritsu') ? 'ritsu' : savedFor[0] || 'ritsu';
     view.review = null;
     renderReview();
     const parts = [];
@@ -1050,10 +1075,10 @@
     if (act === 'read') return openReader(id);
     if (act === 'extract') {
       return openModal(
-        `<h2>「${esc(log.title)}」 다시 뽑기</h2><p class="hint">누구 설정을 찾을까요? 이미 있는 설정은 ‘재확인’으로 표시돼요.</p>
+        `<h2>「${esc(log.title)}」 다시 뽑기</h2><p class="hint">누구 설정을 찾을까요? ‘둘 다’를 고르면 AI가 리츠 것과 엔쥬 것을 나눠 줘요. 이미 있는 설정은 ‘재확인’으로 표시돼요.</p>
         ${N.gemini.hasKey('paid') ? `<label class="check"><input type="checkbox" id="xPrivate"${log.private ? ' checked' : ''} /><span>🔒 유료 키로만 처리</span></label>` : ''}
         <div class="modal-foot"><button class="btn btn-ghost" data-close>취소</button>
-        <button class="btn" data-char="enju">엔쥬</button><button class="btn btn-brand" data-char="ritsu">리츠</button></div>`,
+        <button class="btn" data-char="ritsu">리츠만</button><button class="btn" data-char="enju">엔쥬만</button><button class="btn btn-brand" data-char="both">둘 다 (AI 구분)</button></div>`,
         (box) => {
           $('[data-close]', box).onclick = closeModal;
           $$('[data-char]', box).forEach(

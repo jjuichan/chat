@@ -123,29 +123,45 @@
     },
 
     // Pull facts about one character out of a chat log.
-    async extract(log, charId, keys) {
-      const c = N.CHARS[charId];
-      const other = N.CHARS[c.other];
-      const known = N.facts(charId)
-        .filter((f) => f.status !== 'hold' || f.conflicts.length)
-        .map((f) => `[${f.id}] (${N.catLabel(f.cat, charId)}) ${f.text}`)
-        .join('\n');
-      const cats = N.CATS.map((x) => `- ${x.id}: ${N.catLabel(x.id, charId)}${x.hint ? ` (${x.hint})` : ''}`).join('\n');
+    // target: 'ritsu' | 'enju' | 'both'. With 'both', Gemini also says whose fact each item is.
+    async extract(log, target, keys) {
+      const both = target === 'both';
+      const ids = both ? ['ritsu', 'enju'] : [target];
+      const R = N.CHARS.ritsu;
+      const E = N.CHARS.enju;
+      const known = ids
+        .map((id) => {
+          const list = N.facts(id)
+            .filter((f) => f.status !== 'hold' || f.conflicts.length)
+            .map((f) => `[${f.id}] (${N.catLabel(f.cat, id)}) ${f.text}`)
+            .join('\n');
+          return `[이미 아는 ${N.CHARS[id].name} 설정]\n${list || '(아직 없음)'}`;
+        })
+        .join('\n\n');
+      const cats = N.CATS.map((x) => `- ${x.id}: ${x.id === 'rel' ? '상대와의 관계' : x.label}${x.hint ? ` (${x.hint})` : ''}`).join('\n');
+      const who = both ? `${R.name}와 ${E.name} 두 사람` : N.CHARS[target].name;
+      const ex = both ? R : N.CHARS[target];
+      const exOther = N.CHARS[ex.other];
 
       const system = [
         `너는 AI 캐릭터 채팅 로그에서 캐릭터 설정을 수집하는 기록 담당이야.`,
-        `대상 캐릭터: ${c.full} (${c.ja}). 로그에서 이렇게도 불려: ${N.aliases(charId).join(', ')}.`,
-        `상대 캐릭터: ${other.full} (${other.ja}). 다른 이름: ${N.aliases(other.id).join(', ')}.`,
+        `등장인물:`,
+        `- ritsu = ${R.full} (${R.ja}). 로그에서 이렇게도 불려: ${N.aliases('ritsu').join(', ')}.`,
+        `- enju = ${E.full} (${E.ja}). 로그에서 이렇게도 불려: ${N.aliases('enju').join(', ')}.`,
+        `수집 대상: ${who}.`,
         ``,
         `규칙:`,
-        `1. ${c.name}에 대해 로그에서 드러난 ‘오래 유지되는 설정’만 뽑아. 생일·나이·외모·성격·취향·과거·말버릇·호칭·인간관계·${other.name}와의 관계 등.`,
+        `1. ${who}에 대해 로그에서 드러난 ‘오래 유지되는 설정’만 뽑아. 생일·나이·외모·성격·취향·과거·말버릇·호칭·인간관계·상대와의 관계 등.`,
         `2. 그 장면에서만의 일시적인 행동이나 기분(예: 지금 커피를 마심, 지금 화남)은 뽑지 마. 단, 반복되는 습관이나 성격을 보여주면 설정으로 정리해.`,
         `3. 로그에 근거가 없는 건 절대 추측하거나 지어내지 마.`,
-        `4. ${other.name}에 대한 정보는 뽑지 마. 둘의 관계에 대한 것만 rel 카테고리로 뽑아.`,
+        both
+          ? `4. character에는 그 설정의 주인을 적어 (ritsu 또는 enju). 누가 한 말인지가 아니라 누구에 대한 설정인지로 정해. 예: 엔쥬가 "리츠는 단 걸 싫어하잖아"라고 했다면 ritsu. 리츠가 엔쥬를 부르는 호칭은 ritsu의 말버릇·호칭. 둘에게 똑같이 해당하는 관계 설정은 각자 하나씩 뽑아.`
+          : `4. character는 항상 ${target}. ${exOther.name}에 대한 정보는 뽑지 마. 둘의 관계에 대한 것만 rel 카테고리로 뽑아.`,
+        `   주인이 누군지 로그만으로 확실하지 않으면 뽑지 마.`,
         `   성적인 취향·성향·스킨십 습관처럼 은밀한 설정은 adult 카테고리로 뽑아. 장면을 묘사하지 말고 설정만 담백하게 적어 (예: "목덜미에 약함").`,
-        `5. fact는 한국어 한 문장, 60자 이내, 명사형이나 ‘~함’체로 간결하게 (예: "단 음식을 싫어함", "${other.name}를 둘이 있을 때만 이름으로 부름").`,
+        `5. fact는 한국어 한 문장, 60자 이내, 명사형이나 ‘~함’체로 간결하게. 주어(이름)는 빼고 써 (예: "단 음식을 싫어함", "${exOther.name}를 둘이 있을 때만 이름으로 부름").`,
         `6. quote에는 근거가 된 부분을 로그에서 글자 그대로 복사해 넣어 (150자 이내). 바꾸거나 요약하지 마.`,
-        `7. 이미 아는 설정 목록과 비교해서 relation을 정해:`,
+        `7. 같은 인물의 이미 아는 설정 목록과 비교해서 relation을 정해:`,
         `   - same: 이미 목록에 같은 내용이 있음 → relatedId에 그 id`,
         `   - conflict: 목록의 내용과 모순됨 → relatedId에 그 id, reason에 무엇이 어긋나는지 짧게`,
         `   - new: 목록에 없는 새로운 내용`,
@@ -155,7 +171,7 @@
         cats,
       ].join('\n');
 
-      const prompt = [`[이미 아는 ${c.name} 설정]`, known || '(아직 없음)', '', '[채팅 로그]', log].join('\n');
+      const prompt = [known, '', '[채팅 로그]', log].join('\n');
 
       const schema = {
         type: 'OBJECT',
@@ -165,6 +181,7 @@
             items: {
               type: 'OBJECT',
               properties: {
+                character: { type: 'STRING', enum: ids },
                 category: { type: 'STRING', enum: N.CATS.map((x) => x.id) },
                 fact: { type: 'STRING' },
                 quote: { type: 'STRING' },
@@ -172,8 +189,8 @@
                 relatedId: { type: 'STRING' },
                 reason: { type: 'STRING' },
               },
-              required: ['category', 'fact', 'quote', 'relation'],
-              propertyOrdering: ['category', 'fact', 'quote', 'relation', 'relatedId', 'reason'],
+              required: ['character', 'category', 'fact', 'quote', 'relation'],
+              propertyOrdering: ['character', 'category', 'fact', 'quote', 'relation', 'relatedId', 'reason'],
             },
           },
         },
@@ -191,9 +208,12 @@
       return (parsed.items || [])
         .filter((it) => it && it.fact)
         .map((it) => {
-          const rel = N.state.facts[it.relatedId] && N.state.facts[it.relatedId].char === charId ? it.relatedId : null;
+          const char = ids.includes(it.character) ? it.character : ids[0];
+          // a "same"/"conflict" link only counts if it points at a fact of the same person
+          const rel = N.state.facts[it.relatedId] && N.state.facts[it.relatedId].char === char ? it.relatedId : null;
           return {
             key: N.util.uid(),
+            char,
             cat: N.CATS.some((x) => x.id === it.category) ? it.category : 'etc',
             text: String(it.fact).trim(),
             quote: String(it.quote || '').trim(),
