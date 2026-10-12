@@ -349,6 +349,11 @@ button.badge { cursor: pointer; }
 .log-item .btn-row { flex-wrap: nowrap; }
 
 /* ---------- settings ---------- */
+.key-state:empty { display: none; }
+.key-state.ok { color: var(--ok); font-weight: 700; }
+.key-state.bad { color: var(--enju); font-weight: 700; }
+.private-check { margin: 0 0 12px; align-items: flex-start; }
+.private-check em { display: block; }
 .backup-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0 14px; }
 .backup-stat { background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
 .backup-stat span { display: block; font-size: 12px; color: var(--text-3); font-weight: 700; }

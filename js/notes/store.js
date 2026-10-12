@@ -135,6 +135,7 @@
   N.settings = Object.assign(
     {
       geminiKey: '',
+      geminiPaidKey: '',
       model: 'gemini-2.5-flash',
       clientId: '',
       driveOn: false,

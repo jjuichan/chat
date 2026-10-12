@@ -531,6 +531,7 @@
   function renderCollect() {
     $$('#targetSeg button').forEach((b) => b.classList.toggle('on', b.dataset.value === view.target));
     $('#logCount').textContent = `${logInput.value.length.toLocaleString()}자`;
+    $('#privateRow').hidden = !N.gemini.hasKey('paid');
     renderReview();
     renderReader();
   }
@@ -562,15 +563,18 @@
       toast('먼저 대화를 붙여넣어 주세요', { err: true });
       return null;
     }
-    if (view.draftLogId && N.state.logs[view.draftLogId]) return view.draftLogId;
-    const same = Object.values(N.state.logs).find((l) => l.text === text);
-    if (same) return (view.draftLogId = same.id);
+    const priv = N.gemini.hasKey('paid') && $('#optPrivate').checked;
+    const existing = (view.draftLogId && N.state.logs[view.draftLogId]) || Object.values(N.state.logs).find((l) => l.text === text);
+    if (existing) {
+      if (!!existing.private !== priv) N.commit((s) => Object.assign(s.logs[existing.id], { private: priv, updatedAt: Date.now() }), { quiet: true });
+      return (view.draftLogId = existing.id);
+    }
     const now = Date.now();
     const d = new Date();
     const id = U.uid();
     const title = logTitleInput.value.trim() || `${U.date(now)} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')} 대화`;
     N.commit((s) => {
-      s.logs[id] = { id, title, text, createdAt: now, updatedAt: now, extractedAt: 0 };
+      s.logs[id] = { id, title, text, private: priv, createdAt: now, updatedAt: now, extractedAt: 0 };
     });
     view.draftLogId = id;
     return id;
@@ -586,21 +590,24 @@
   });
 
   async function runExtract(logId, charId) {
-    if (!N.settings.geminiKey) {
-      toast('Gemini API 키가 필요해요', { err: true, action: { label: '설정으로', fn: () => setTab('settings') } });
-      return;
-    }
     const log = N.state.logs[logId];
     if (!log) return;
-    view.review = { logId, charId, items: [], loading: true, error: '' };
+    const keys = log.private ? 'paid' : 'auto';
+    if (keys === 'paid' ? !N.gemini.hasKey('paid') : !N.gemini.hasKey('free') && !N.gemini.hasKey('paid')) {
+      toast(keys === 'paid' ? '🔒 대화라서 유료 키가 필요해요' : 'Gemini API 키가 필요해요', { err: true, action: { label: '설정으로', fn: () => setTab('settings') } });
+      return;
+    }
+    view.review = { logId, charId, items: [], loading: true, error: '', keyUsed: null };
     if (view.tab !== 'collect') setTab('collect');
     else renderReview();
     $('#reviewCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
     try {
-      const items = await N.gemini.extract(log.text, charId);
+      const items = await N.gemini.extract(log.text, charId, keys);
       if (!view.review || view.review.logId !== logId) return;
       items.forEach((it) => (it.on = true));
       view.review.items = items;
+      view.review.keyUsed = N.gemini.lastKey;
+      if (N.gemini.lastKey === 'fallback') toast('무료 한도가 차서 이번엔 유료 키로 처리했어요', { ms: 5000 });
     } catch (e) {
       if (view.review) view.review.error = e.message;
     }
@@ -640,7 +647,7 @@
     card.innerHTML = `
       <div class="review-head">
         <div><h2 class="card-title">${esc(c.name)} 설정 후보 ${r.items.length}개</h2>
-        <span class="hint">✨ 새 설정 ${kinds.new} · 재확인 ${kinds.same} · ⚠ 모순 ${kinds.conflict} — 「${title}」</span></div>
+        <span class="hint">✨ 새 설정 ${kinds.new} · 재확인 ${kinds.same} · ⚠ 모순 ${kinds.conflict} — 「${title}」 · ${keyLabel(r.keyUsed)}</span></div>
         <button class="btn btn-sm btn-ghost" data-act="toggle-all">${on === r.items.length ? '모두 해제' : '모두 선택'}</button>
       </div>
       ${r.items.map((it) => candCard(it, r.charId)).join('')}
@@ -649,6 +656,10 @@
         <button class="btn" data-act="read"><svg><use href="#i-book"/></svg>대화 읽으며 더 고르기</button>
         <button class="btn btn-brand" data-act="save-review"${on ? '' : ' disabled'}><svg><use href="#i-check"/></svg>선택한 ${on}개 저장</button>
       </div>`;
+  }
+
+  function keyLabel(k) {
+    return { free: '무료 키 사용', paid: '🔒 유료 키 사용', fallback: '무료 한도 초과 → 유료 키 사용' }[k] || '';
   }
 
   function candCard(it, charId) {
@@ -876,7 +887,7 @@
       ? logs
           .map(
             (l) => `<div class="log-item" data-id="${l.id}">
-          <div class="log-main"><b>${esc(l.title)}</b>
+          <div class="log-main"><b>${l.private ? '🔒 ' : ''}${esc(l.title)}</b>
             <span>${U.date(l.createdAt)} · ${l.text.length.toLocaleString()}자 · 근거 ${used[l.id] || 0}개${l.extractedAt ? '' : ' · AI 수집 전'}</span></div>
           <div class="btn-row">
             <button class="btn btn-sm" data-act="read"><svg><use href="#i-book"/></svg>읽기</button>
@@ -899,6 +910,7 @@
     if (act === 'extract') {
       return openModal(
         `<h2>「${esc(log.title)}」 다시 뽑기</h2><p class="hint">누구 설정을 찾을까요? 이미 있는 설정은 ‘재확인’으로 표시돼요.</p>
+        ${N.gemini.hasKey('paid') ? `<label class="check"><input type="checkbox" id="xPrivate"${log.private ? ' checked' : ''} /><span>🔒 유료 키로만 처리</span></label>` : ''}
         <div class="modal-foot"><button class="btn btn-ghost" data-close>취소</button>
         <button class="btn" data-char="enju">엔쥬</button><button class="btn btn-brand" data-char="ritsu">리츠</button></div>`,
         (box) => {
@@ -906,6 +918,8 @@
           $$('[data-char]', box).forEach(
             (x) =>
               (x.onclick = () => {
+                const pv = $('#xPrivate', box);
+                if (pv && pv.checked !== !!log.private) N.commit((s) => Object.assign(s.logs[id], { private: pv.checked, updatedAt: Date.now() }), { quiet: true });
                 closeModal();
                 view.target = x.dataset.char;
                 runExtract(id, x.dataset.char);
@@ -970,8 +984,12 @@
     renderDrive();
 
     if (document.activeElement !== $('#geminiKey')) $('#geminiKey').value = st.geminiKey || '';
+    if (document.activeElement !== $('#geminiPaidKey')) $('#geminiPaidKey').value = st.geminiPaidKey || '';
     if (document.activeElement !== $('#model')) $('#model').value = st.model || '';
-    $('#geminiInfo').textContent = st.geminiKey ? '키가 저장돼 있어요' : '키를 넣으면 AI 수집을 쓸 수 있어요';
+    const free = N.gemini.hasKey('free');
+    const paid = N.gemini.hasKey('paid');
+    $('#geminiInfo').textContent =
+      free && paid ? '무료 키 먼저, 한도가 차면 유료 키로 넘어가요' : free ? '무료 키만 써요' : paid ? '유료 키만 써요' : '키를 넣으면 AI 수집을 쓸 수 있어요';
     if (document.activeElement !== $('#aliasRitsu')) $('#aliasRitsu').value = N.aliases('ritsu').join(', ');
     if (document.activeElement !== $('#aliasEnju')) $('#aliasEnju').value = N.aliases('enju').join(', ');
   }
@@ -1086,17 +1104,24 @@
     N.saveSettings({ clientId: v });
     render();
   });
-  $('#geminiKey').addEventListener('change', (e) => {
-    N.saveSettings({ geminiKey: e.target.value.trim() });
-    renderSettings();
-  });
-  $('#btnShowKey').addEventListener('click', () => {
-    const k = $('#geminiKey');
-    k.type = k.type === 'password' ? 'text' : 'password';
-  });
+  const keyInputs = () => ({ geminiKey: $('#geminiKey').value.trim(), geminiPaidKey: $('#geminiPaidKey').value.trim() });
+  $$('.key-input').forEach((inp) =>
+    inp.addEventListener('change', () => {
+      N.saveSettings(keyInputs());
+      $(inp.id === 'geminiKey' ? '#freeState' : '#paidState').textContent = '';
+      renderSettings();
+    })
+  );
+  $$('[data-show]').forEach((b) =>
+    b.addEventListener('click', (e) => {
+      e.preventDefault();
+      const k = $('#' + b.dataset.show);
+      k.type = k.type === 'password' ? 'text' : 'password';
+    })
+  );
   $('#model').addEventListener('change', (e) => N.saveSettings({ model: e.target.value.trim() || 'gemini-2.5-flash' }));
   $('#btnModels').addEventListener('click', async (e) => {
-    N.saveSettings({ geminiKey: $('#geminiKey').value.trim() });
+    N.saveSettings(keyInputs());
     const btn = e.currentTarget;
     btn.disabled = true;
     try {
@@ -1115,21 +1140,31 @@
     if (!e.target.value.trim()) e.target.value = N.settings.model;
   });
   $('#btnTestKey').addEventListener('click', async (e) => {
-    N.saveSettings({ geminiKey: $('#geminiKey').value.trim(), model: $('#model').value.trim() || N.settings.model });
+    N.saveSettings(Object.assign(keyInputs(), { model: $('#model').value.trim() || N.settings.model }));
+    const which = ['free', 'paid'].filter((k) => N.gemini.hasKey(k));
+    if (!which.length) return toast('먼저 키를 넣어 주세요', { err: true });
     const btn = e.currentTarget;
     btn.disabled = true;
     btn.innerHTML = '<i class="spin"></i>확인 중';
-    try {
-      await N.gemini.test();
-      $('#geminiInfo').textContent = `연결 성공 · ${N.settings.model}`;
-      toast('Gemini 연결 성공!');
-    } catch (err) {
-      $('#geminiInfo').textContent = '연결 실패';
-      toast(err.message, { err: true });
-    } finally {
-      btn.disabled = false;
-      btn.textContent = '연결 테스트';
+    let fails = 0;
+    for (const k of ['free', 'paid']) {
+      const el = $(k === 'free' ? '#freeState' : '#paidState');
+      el.className = 'hint key-state';
+      el.textContent = '';
+      if (!which.includes(k)) continue;
+      try {
+        await N.gemini.test(k);
+        el.classList.add('ok');
+        el.textContent = `✓ 연결 성공 · ${N.settings.model}`;
+      } catch (err) {
+        fails++;
+        el.classList.add('bad');
+        el.textContent = err.message.replace(/^(무료|유료) 키: /, '✕ ');
+      }
     }
+    btn.disabled = false;
+    btn.textContent = '키 연결 테스트';
+    toast(fails ? '연결에 실패한 키가 있어요. 키 아래 메시지를 확인해 주세요' : 'Gemini 연결 성공!', { err: !!fails });
   });
   ['ritsu', 'enju'].forEach((id) => {
     $(`#alias${id === 'ritsu' ? 'Ritsu' : 'Enju'}`).addEventListener('change', (e) => {

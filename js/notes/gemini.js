@@ -15,14 +15,16 @@
     if (/API_KEY_INVALID|API key not valid/i.test(m)) return 'API 키가 올바르지 않아요. 설정 탭에서 키를 다시 확인해 주세요.';
     if (status === 403) return '이 API 키로는 Gemini를 쓸 수 없어요. Google AI Studio에서 키를 확인하고, 키에 웹사이트 제한을 걸었다면 이 페이지 주소가 허용돼 있는지 봐 주세요.';
     if (status === 404) return `모델을 찾을 수 없어요 (${N.settings.model}). 설정 탭에서 ‘목록 불러오기’로 모델을 다시 골라 주세요.`;
-    if (status === 429) return '사용량 한도에 걸렸어요. 잠시 뒤에 다시 시도하거나, 더 가벼운 모델(flash 계열)을 골라 주세요.';
+    if (status === 429) return '사용량 한도에 걸렸어요. 잠시 뒤에 다시 시도하거나, 설정 탭에 유료 키도 넣어 두면 한도가 찰 때 자동으로 넘어가요.';
     if (status >= 500) return 'Gemini 서버가 잠시 불안정해요. 조금 뒤에 다시 시도해 주세요.';
     return m || `요청이 실패했어요 (${status}).`;
   }
 
-  async function call(path, body) {
-    const key = (N.settings.geminiKey || '').trim();
-    if (!key) throw new Error('Gemini API 키가 없어요. 설정 탭에서 먼저 입력해 주세요.');
+  const KEY_LABEL = { free: '무료 키', paid: '유료 키' };
+  const keyOf = (which) => String((which === 'paid' ? N.settings.geminiPaidKey : N.settings.geminiKey) || '').trim();
+
+  async function callWith(which, path, body) {
+    const key = keyOf(which);
     let res;
     try {
       res = await fetch(`${BASE}/${path}`, {
@@ -34,11 +36,40 @@
       throw new Error('Gemini에 연결하지 못했어요. 인터넷 연결을 확인해 주세요.');
     }
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(friendly(res.status, data.error && data.error.message));
+    if (!res.ok) {
+      const err = new Error(`${KEY_LABEL[which]}: ${friendly(res.status, data.error && data.error.message)}`);
+      err.status = res.status;
+      throw err;
+    }
     return data;
   }
 
-  async function generate({ system, prompt, schema, temperature }) {
+  // keys: 'auto' = free key first, paid key if the free quota is used up; 'paid' = paid key only.
+  // Reports which key actually answered through N.gemini.lastKey.
+  async function call(path, body, keys) {
+    const free = keyOf('free');
+    const paid = keyOf('paid');
+    if (keys === 'paid') {
+      if (!paid) throw new Error('유료 키가 없어요. 설정 탭에서 유료 키를 넣어 주세요.');
+      N.gemini.lastKey = 'paid';
+      return callWith('paid', path, body);
+    }
+    if (!free && !paid) throw new Error('Gemini API 키가 없어요. 설정 탭에서 먼저 입력해 주세요.');
+    if (!free) {
+      N.gemini.lastKey = 'paid';
+      return callWith('paid', path, body);
+    }
+    try {
+      N.gemini.lastKey = 'free';
+      return await callWith('free', path, body);
+    } catch (e) {
+      if (e.status !== 429 || !paid) throw e;
+      N.gemini.lastKey = 'fallback';
+      return callWith('paid', path, body);
+    }
+  }
+
+  async function generate({ system, prompt, schema, temperature, keys }) {
     const data = await call(`models/${encodeURIComponent(N.settings.model || 'gemini-2.5-flash')}:generateContent`, {
       systemInstruction: { parts: [{ text: system }] },
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -47,7 +78,7 @@
         { temperature: temperature == null ? 0.2 : temperature },
         schema ? { responseMimeType: 'application/json', responseSchema: schema } : {}
       ),
-    });
+    }, keys);
     if (data.promptFeedback && data.promptFeedback.blockReason)
       throw new Error(`Gemini가 이 대화를 처리하지 않았어요 (${data.promptFeedback.blockReason}). 문제가 될 만한 부분을 빼고 다시 시도해 주세요.`);
     const cand = (data.candidates || [])[0];
@@ -62,20 +93,26 @@
   }
 
   N.gemini = {
+    lastKey: null,
+    hasKey: (which) => !!keyOf(which),
+
     async listModels() {
-      const data = await call('models?pageSize=200');
+      const data = await call('models?pageSize=200', null, keyOf('free') ? 'auto' : 'paid');
       return (data.models || [])
         .filter((m) => (m.supportedGenerationMethods || []).includes('generateContent') && /gemini/i.test(m.name))
         .map((m) => ({ id: m.name.replace(/^models\//, ''), label: m.displayName || m.name }));
     },
 
-    async test() {
-      const t = await generate({ system: 'Reply with exactly: OK', prompt: 'ping', temperature: 0 });
-      return t.trim();
+    // Check one key on its own (no fallback), so each box in settings gets its own verdict.
+    async test(which) {
+      await callWith(which, `models/${encodeURIComponent(N.settings.model || 'gemini-2.5-flash')}:generateContent`, {
+        contents: [{ role: 'user', parts: [{ text: 'Reply with exactly: OK' }] }],
+        generationConfig: { temperature: 0 },
+      });
     },
 
     // Pull facts about one character out of a chat log.
-    async extract(log, charId) {
+    async extract(log, charId, keys) {
       const c = N.CHARS[charId];
       const other = N.CHARS[c.other];
       const known = N.facts(charId)
@@ -131,7 +168,7 @@
         required: ['items'],
       };
 
-      const text = await generate({ system, prompt, schema });
+      const text = await generate({ system, prompt, schema, keys });
       let parsed;
       try {
         parsed = JSON.parse(text);

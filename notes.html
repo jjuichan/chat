@@ -87,6 +87,7 @@
           </label>
         </div>
         <textarea id="logInput" class="raw" spellcheck="false" placeholder="*리츠는 컵을 내려놓았다.*&#10;&quot;단 건 별로야. 넌 알잖아.&quot;&#10;&#10;엔쥬: 그럼 이건 내가 먹을게."></textarea>
+        <label class="check private-check" id="privateRow" hidden><input type="checkbox" id="optPrivate" /><span>🔒 이 대화는 유료 키로만 처리 <em class="hint">학습에 쓰이지 않아요 · 대화 기록에서 다시 뽑을 때도 유지</em></span></label>
         <div class="row-between">
           <span class="hint" id="logCount">0자</span>
           <div class="btn-row">
@@ -148,14 +149,24 @@
 
       <div class="card">
         <h2 class="card-title">Gemini API</h2>
-        <p class="lead">키는 <b>이 브라우저에만</b> 저장되고, 백업 파일이나 드라이브 동기화에는 들어가지 않아요. 다른 기기에서는 한 번 더 입력해 주세요.</p>
+        <p class="lead">평소엔 <b>무료 키</b>로 쓰고, 무료 한도가 차면 자동으로 <b>유료 키</b>로 넘어가요. 하나만 넣어도 돼요. 키는 <b>이 브라우저에만</b> 저장되고, 백업 파일이나 드라이브에는 들어가지 않아요.</p>
         <label class="field">
-          <span class="lbl">API 키 <a class="hint-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">AI Studio에서 받기</a></span>
+          <span class="lbl">무료 키 <em class="hint">결제를 끈 프로젝트의 키</em><a class="hint-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">AI Studio에서 받기</a></span>
           <div class="input-row">
-            <input type="password" id="geminiKey" placeholder="AIza..." autocomplete="off" spellcheck="false" />
-            <button class="icon-btn" id="btnShowKey" title="키 보기" aria-label="키 보기"><svg><use href="#i-eye"/></svg></button>
+            <input type="password" id="geminiKey" class="key-input" placeholder="AIza..." autocomplete="off" spellcheck="false" />
+            <button class="icon-btn" data-show="geminiKey" title="키 보기" aria-label="무료 키 보기"><svg><use href="#i-eye"/></svg></button>
           </div>
+          <span class="hint key-state" id="freeState"></span>
         </label>
+        <label class="field">
+          <span class="lbl">유료 키 <em class="hint">충전·결제된 프로젝트의 키 · 보낸 내용이 학습에 쓰이지 않아요</em></span>
+          <div class="input-row">
+            <input type="password" id="geminiPaidKey" class="key-input" placeholder="AIza..." autocomplete="off" spellcheck="false" />
+            <button class="icon-btn" data-show="geminiPaidKey" title="키 보기" aria-label="유료 키 보기"><svg><use href="#i-eye"/></svg></button>
+          </div>
+          <span class="hint key-state" id="paidState"></span>
+        </label>
+        <p class="hint">무료 키로 보낸 대화는 구글 서비스 개선에 쓰일 수 있어요. 남에게 보이기 싫은 대화는 수집할 때 <b>🔒 유료 키로만</b>을 켜 주세요.</p>
         <label class="field">
           <span class="lbl">모델 <em class="hint">flash 계열이 빠르고 무료 한도가 넉넉해요</em></span>
           <div class="input-row">
@@ -166,7 +177,7 @@
         </label>
         <div class="row-between">
           <span class="hint" id="geminiInfo"></span>
-          <button class="btn btn-sm" id="btnTestKey">연결 테스트</button>
+          <button class="btn btn-sm" id="btnTestKey">키 연결 테스트</button>
         </div>
       </div>
 
