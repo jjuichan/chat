@@ -364,6 +364,29 @@ button.badge { cursor: pointer; }
 .notice > svg { color: var(--warn); }
 .notice p { margin: 0; flex: 1 1 240px; }
 
+.pick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pick-actions .btn { height: 40px; font-size: 14px; }
+
+/* attach-as-evidence picker */
+.pick-quote { margin: 0 0 12px; }
+.fact-pick { max-height: 46vh; overflow: auto; margin: 10px -4px 0; padding: 0 4px; }
+.fact-pick button {
+  display: flex; width: 100%; text-align: left; gap: 8px; align-items: baseline;
+  padding: 10px 12px; margin-bottom: 6px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--surface); font-size: 14.5px; font-weight: 600;
+}
+.fact-pick button:hover { border-color: var(--accent); }
+.fact-pick .who-tag { flex: none; font-size: 11.5px; font-weight: 800; padding: 1px 6px; border-radius: 5px; background: var(--ritsu-soft); color: var(--ritsu-deep); }
+.fact-pick .who-tag.enju { background: var(--enju-soft); color: var(--enju); }
+.fact-pick .cat-tag { flex: none; font-size: 12px; color: var(--text-3); font-weight: 600; }
+.fact-pick .txt { flex: 1; min-width: 0; }
+.fact-pick .hint { display: block; text-align: center; padding: 14px 0; }
+
+/* evidence tools on a fact card */
+.ev-tools { display: flex; gap: 6px; flex-wrap: wrap; }
+.quote-src .ev-del { color: var(--text-3); }
+.quote-src .ev-del:hover { color: var(--enju); }
+
 /* ---------- logs ---------- */
 .log-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
 .log-item:first-child { border-top: 0; }

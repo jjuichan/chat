@@ -28,6 +28,24 @@
         .replace(/[‘’']/g, '')
         .replace(/\s+/g, '')
         .toLowerCase(),
+    // Find `quote` in `text` ignoring spaces, quote marks and asterisks, and return the
+    // exact original substring (so highlighting works), or null when it isn't there.
+    locate(text, quote) {
+      if (!text || !quote) return null;
+      if (text.includes(quote)) return quote;
+      const skip = /[\s“”「」『』"*‘’']/;
+      const map = [];
+      let norm = '';
+      for (let i = 0; i < text.length; i++) {
+        if (skip.test(text[i])) continue;
+        norm += text[i].toLowerCase();
+        map.push(i);
+      }
+      const q = U.norm(quote);
+      const at = q ? norm.indexOf(q) : -1;
+      if (at < 0) return null;
+      return text.slice(map[at], map[at + q.length - 1] + 1);
+    },
     date(ts) {
       if (!ts) return '—';
       const d = new Date(ts);

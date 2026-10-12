@@ -162,7 +162,7 @@
         `5. fact는 한국어 한 문장, 60자 이내, 명사형이나 ‘~함’체로 간결하게. 주어(이름)는 빼고 써 (예: "단 음식을 싫어함", "${exOther.name}를 둘이 있을 때만 이름으로 부름").`,
         `6. quote에는 근거가 된 부분을 로그에서 글자 그대로 복사해 넣어 (150자 이내). 바꾸거나 요약하지 마.`,
         `7. 같은 인물의 이미 아는 설정 목록과 비교해서 relation을 정해:`,
-        `   - same: 이미 목록에 같은 내용이 있음 → relatedId에 그 id`,
+        `   - same: 이미 목록에 같은 내용이 있음 → relatedId에 그 id. 이미 아는 설정이라도 이 로그에 근거가 보이면 빠짐없이 same으로 포함해 (근거를 모으는 용도야).`,
         `   - conflict: 목록의 내용과 모순됨 → relatedId에 그 id, reason에 무엇이 어긋나는지 짧게`,
         `   - new: 목록에 없는 새로운 내용`,
         `8. 같은 내용을 여러 번 뽑지 마. 하나의 설정에 근거가 여러 개면 가장 분명한 것 하나만.`,
@@ -222,7 +222,82 @@
             reason: String(it.reason || '').trim(),
             quoteFound: !!it.quote && logN.includes(N.util.norm(it.quote)),
           };
-        });
+        })
+        .map((it) => Object.assign(it, { quote: N.util.locate(log, it.quote) || it.quote }));
+    },
+
+    // For each given fact, find the passage in the log that backs it up. Returns [{factId, quote}],
+    // keeping only quotes that really are in the log (as the exact original text).
+    async findEvidence(log, facts, keys) {
+      if (!facts.length) return [];
+      const list = facts.map((f) => `[${f.id}] (${N.CHARS[f.char].name}) ${f.text}`).join('\n');
+      const system = [
+        `너는 캐릭터 설정의 근거를 채팅 로그에서 찾아 주는 기록 담당이야.`,
+        `등장인물: ${N.CHARS.ritsu.full}(별칭: ${N.aliases('ritsu').join(', ')}), ${N.CHARS.enju.full}(별칭: ${N.aliases('enju').join(', ')}).`,
+        `규칙:`,
+        `1. 설정 목록의 각 항목에 대해, 로그에서 그 설정을 보여주거나 뒷받침하는 부분을 찾아.`,
+        `2. quote에는 로그의 해당 부분을 글자 그대로 복사해 (150자 이내). 바꾸거나 요약하지 마.`,
+        `3. 근거가 분명하지 않은 설정은 결과에서 빼. 억지로 찾지 마.`,
+        `4. 한 설정에 근거가 여러 곳이면 가장 분명한 것 최대 2개.`,
+      ].join('\n');
+      const schema = {
+        type: 'OBJECT',
+        properties: {
+          items: {
+            type: 'ARRAY',
+            items: {
+              type: 'OBJECT',
+              properties: { factId: { type: 'STRING' }, quote: { type: 'STRING' } },
+              required: ['factId', 'quote'],
+              propertyOrdering: ['factId', 'quote'],
+            },
+          },
+        },
+        required: ['items'],
+      };
+      const text = await generate({ system, prompt: `[설정 목록]\n${list}\n\n[채팅 로그]\n${log}`, schema, keys });
+      let parsed;
+      try {
+        parsed = JSON.parse(text);
+      } catch (e) {
+        throw new Error('Gemini 응답을 읽지 못했어요. 다시 시도해 주세요.');
+      }
+      const ok = new Set(facts.map((f) => f.id));
+      return (parsed.items || [])
+        .filter((it) => it && ok.has(it.factId))
+        .map((it) => ({ factId: it.factId, quote: N.util.locate(log, it.quote) }))
+        .filter((it) => it.quote);
+    },
+
+    // Turn a passage the user picked into a short fact line.
+    async factFromQuote(quote, keys) {
+      const schema = {
+        type: 'OBJECT',
+        properties: {
+          character: { type: 'STRING', enum: ['ritsu', 'enju'] },
+          category: { type: 'STRING', enum: N.CATS.map((x) => x.id) },
+          fact: { type: 'STRING' },
+        },
+        required: ['character', 'category', 'fact'],
+      };
+      const text = await generate({
+        system: [
+          `너는 채팅 로그의 한 대목에서 캐릭터 설정을 한 줄로 정리하는 기록 담당이야.`,
+          `등장인물: ritsu = ${N.CHARS.ritsu.full}(별칭: ${N.aliases('ritsu').join(', ')}), enju = ${N.CHARS.enju.full}(별칭: ${N.aliases('enju').join(', ')}).`,
+          `대목에서 알 수 있는 오래 유지되는 설정 하나를 한국어 한 문장, 60자 이내, ‘~함’체로 써. 주어(이름)는 빼.`,
+          `character는 누구에 대한 설정인지(누가 말했는지가 아니라). 은밀한 성적 취향은 adult 카테고리, 장면 묘사 없이 담백하게.`,
+          `카테고리: ${N.CATS.map((c) => c.id + '=' + c.label).join(', ')}`,
+        ].join('\n'),
+        prompt: quote,
+        schema,
+        keys,
+      });
+      try {
+        const r = JSON.parse(text);
+        return { char: N.CHARS[r.character] ? r.character : 'ritsu', cat: N.CATS.some((c) => c.id === r.category) ? r.category : 'etc', text: String(r.fact || '').trim() };
+      } catch (e) {
+        throw new Error('Gemini 응답을 읽지 못했어요. 다시 시도해 주세요.');
+      }
     },
 
     // Shorten the summary to fit a character-memory box.

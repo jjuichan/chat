@@ -155,6 +155,7 @@
       new: count((f) => f.fresh),
       warn: count((f) => f.conflicts.length),
     };
+    const noEv = fs.filter((f) => !f.evidence.length).length;
     const logIds = new Set();
     fs.forEach((f) => f.evidence.forEach((e) => e.logId && logIds.add(e.logId)));
 
@@ -178,6 +179,7 @@
         <div class="btn-row">
           <button class="btn btn-sm" data-act="add"><svg><use href="#i-plus"/></svg>직접 추가</button>
           <button class="btn btn-sm" data-act="summary"><svg><use href="#i-copy"/></svg>채팅용 요약</button>
+          ${noEv ? `<button class="btn btn-sm" data-act="find-ev-all"><svg><use href="#i-search"/></svg>근거 없는 ${noEv}개 근거 찾기</button>` : ''}
           ${n.new ? `<button class="btn btn-sm btn-ghost" data-act="seen-all"><svg><use href="#i-check"/></svg>NEW ${n.new}개 모두 확인</button>` : ''}
         </div>
       </div>`;
@@ -280,20 +282,26 @@
       f.fresh ? `<button class="badge new" data-act="seen" title="확인 표시">NEW</button>` : '',
       f.conflicts.length ? `<button class="badge warn" data-act="to-conflict"><svg><use href="#i-alert"/></svg>모순</button>` : '',
       f.seen ? `<span class="badge seen" title="다른 대화에서 다시 확인된 횟수">재확인 ×${f.seen}</span>` : '',
-      ev.length ? `<button class="badge" data-act="toggle-ev"><svg><use href="#i-quote"/></svg>근거 ${ev.length}</button>` : `<span class="badge">직접 입력</span>`,
+      ev.length
+        ? `<button class="badge" data-act="toggle-ev"><svg><use href="#i-quote"/></svg>근거 ${ev.length}</button>`
+        : `<button class="badge" data-act="toggle-ev" title="근거 추가하기"><svg><use href="#i-quote"/></svg>근거 없음</button>`,
     ].join('');
     const seg = Object.keys(N.STATUS)
       .map((s) => `<button data-act="status" data-value="${s}"${f.status === s ? ' class="on"' : ''}>${N.STATUS[s]}</button>`)
       .join('');
-    const evidence = open && ev.length
+    const evidence = open
       ? `<div class="evidence">${ev
           .map((e) => {
             const title = logTitle(e.logId);
             return `<div><blockquote class="quote">${esc(e.quote)}</blockquote>
               <div class="quote-src"><span>${esc(title || (e.logId ? '삭제된 대화' : '직접 입력'))} · ${U.date(e.at)}</span>
-              ${title ? `<button data-act="open-log" data-log="${e.logId}" data-quote="${esc(e.quote)}">대화에서 보기</button>` : ''}</div></div>`;
+              <span>${title ? `<button data-act="open-log" data-log="${e.logId}" data-quote="${esc(e.quote)}">대화에서 보기</button> · ` : ''}<button class="ev-del" data-act="del-ev" data-ev="${e.id}">빼기</button></span></div></div>`;
           })
-          .join('')}</div>`
+          .join('')}
+          <div class="ev-tools">
+            <button class="btn btn-sm" data-act="add-ev"><svg><use href="#i-plus"/></svg>근거 직접 추가</button>
+            <button class="btn btn-sm" data-act="find-ev"><svg><use href="#i-search"/></svg>대화 기록에서 AI로 찾기</button>
+          </div></div>`
       : '';
     return `<article class="fact ${f.status}" data-id="${f.id}">
       <div class="fact-top"><p class="fact-text">${esc(f.text)}</p>
@@ -376,6 +384,24 @@
       return;
     }
     if (act === 'delete') return deleteFact(id);
+    if (act === 'add-ev') return addEvidenceModal(id);
+    if (act === 'find-ev') return findEvidenceModal([id], '이 설정의 근거 찾기');
+    if (act === 'find-ev-all') {
+      const ids = N.facts(charId).filter((f) => !f.evidence.length).map((f) => f.id);
+      if (!ids.length) return toast('근거 없는 설정이 없어요');
+      return findEvidenceModal(ids, `근거 없는 ${N.CHARS[charId].name} 설정 ${ids.length}개 근거 찾기`);
+    }
+    if (act === 'del-ev') {
+      const evId = b.dataset.ev;
+      const f = N.state.facts[id];
+      const gone = f && f.evidence.find((e) => e.id === evId);
+      if (!gone) return;
+      N.commit((s) => N.patchFact(s, id, { evidence: s.facts[id].evidence.filter((e) => e.id !== evId) }));
+      toast('근거를 뺐어요', {
+        action: { label: '되돌리기', fn: () => N.commit((s) => s.facts[id] && N.patchFact(s, id, { evidence: s.facts[id].evidence.concat(gone) })) },
+      });
+      return;
+    }
     if (act === 'open-log') return openReader(b.dataset.log, b.dataset.quote);
     if (pair) {
       const a = pair.dataset.a;
@@ -439,36 +465,259 @@
     flashFact(id);
   }
 
-  function addFactModal(charId, cat) {
-    const c = N.CHARS[charId];
+  // Add a quote to a fact's evidence unless it's already there. Returns true when added.
+  function attachEvidence(s, factId, quote, logId) {
+    const f = s.facts[factId];
+    if (!f || !quote) return false;
+    if (f.evidence.some((e) => U.norm(e.quote) === U.norm(quote))) return false;
+    N.patchFact(s, factId, { evidence: f.evidence.concat({ id: U.uid(), quote, logId: logId || null, at: Date.now() }) });
+    return true;
+  }
+
+  // Which saved log contains this quote? Lets a pasted quote link back to its conversation.
+  function findLogFor(quote) {
+    for (const l of Object.values(N.state.logs)) {
+      const exact = U.locate(l.text, quote);
+      if (exact) return { logId: l.id, quote: exact };
+    }
+    return { logId: null, quote };
+  }
+
+  // Rough similarity (shared 2-letter chunks), used to put likely matches first.
+  function likeness(a, b) {
+    const grams = (t) => {
+      const n = U.norm(t);
+      const g = new Set();
+      for (let i = 0; i < n.length - 1; i++) g.add(n.slice(i, i + 2));
+      return g;
+    };
+    const A = grams(a);
+    const B = grams(b);
+    let hit = 0;
+    B.forEach((x) => A.has(x) && hit++);
+    return B.size ? hit / B.size : 0;
+  }
+
+  function attachEvidenceModal(quote, logId) {
+    let who = N.CHARS[view.target] ? view.target : 'all';
     openModal(
-      `<h2>${esc(c.name)} 설정 직접 추가</h2>
-      <p class="hint">짧게 적을수록 나중에 보기 좋아요. 예: “단 음식을 싫어함”</p>
-      <label class="field"><span class="lbl">설정</span><textarea id="mText" style="min-height:80px"></textarea></label>
-      <label class="field"><span class="lbl">카테고리</span><select id="mCat">${catOptions(cat || 'etc', charId)}</select></label>
-      <label class="field"><span class="lbl">근거 대사 <em class="hint">선택</em></span><textarea id="mQuote" style="min-height:70px" placeholder="이 설정이 나온 대사를 붙여넣어 두면 나중에 확인하기 쉬워요"></textarea></label>
+      `<h2>어느 설정의 근거인가요?</h2>
+      <blockquote class="quote pick-quote">${esc(quote)}</blockquote>
+      <div class="input-row">
+        <div class="seg seg-sm" id="aWho">
+          <button data-value="all">전체</button><button data-value="ritsu">리츠</button><button data-value="enju">엔쥬</button>
+        </div>
+        <input type="search" id="aQ" placeholder="설정 검색" />
+      </div>
+      <div class="fact-pick" id="aList"></div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" data-close>취소</button>
+        <button class="btn" id="aNew"><svg><use href="#i-plus"/></svg>맞는 설정이 없어요 · 새로 만들기</button>
+      </div>`,
+      (box) => {
+        const list = () => {
+          const q = $('#aQ', box).value.trim().toLowerCase();
+          $$('#aWho button', box).forEach((b) => b.classList.toggle('on', b.dataset.value === who));
+          const fs = N.facts()
+            .filter((f) => (who === 'all' || f.char === who) && (!q || f.text.toLowerCase().includes(q)))
+            .map((f) => ({ f, score: likeness(quote, f.text) }))
+            .sort((a, b) => b.score - a.score || a.f.createdAt - b.f.createdAt);
+          $('#aList', box).innerHTML = fs.length
+            ? fs
+                .map(
+                  ({ f }) => `<button data-fact="${f.id}"><span class="who-tag ${f.char}">${esc(N.CHARS[f.char].name)}</span>
+                  <span class="txt">${esc(f.text)}</span><span class="cat-tag">${esc(N.catLabel(f.cat, f.char))}</span></button>`
+                )
+                .join('')
+            : `<span class="hint">${q ? '검색 결과가 없어요' : '아직 설정이 없어요'}</span>`;
+        };
+        $('#aWho', box).onclick = (e) => {
+          const b = e.target.closest('button');
+          if (!b) return;
+          who = b.dataset.value;
+          list();
+        };
+        $('#aQ', box).oninput = list;
+        $('#aList', box).onclick = (e) => {
+          const b = e.target.closest('[data-fact]');
+          if (!b) return;
+          let added = false;
+          N.commit((s) => (added = attachEvidence(s, b.dataset.fact, quote, logId)));
+          closeModal();
+          const f = N.state.facts[b.dataset.fact];
+          toast(added ? `「${f.text}」의 근거로 붙였어요` : '이미 붙어 있는 근거예요', {
+            action: { label: '보기', fn: () => goToFact(f.id) },
+          });
+        };
+        $('[data-close]', box).onclick = closeModal;
+        $('#aNew', box).onclick = () => addFactModal(N.CHARS[who] ? who : view.pickChar, null, { quote, logId });
+        list();
+      }
+    );
+  }
+
+  // opts.quote / opts.logId: start from a passage picked in the reader.
+  function addFactModal(charId, cat, opts) {
+    opts = opts || {};
+    let who = N.CHARS[charId] ? charId : 'ritsu';
+    const fromQuote = !!opts.quote;
+    openModal(
+      `<h2>${fromQuote ? '이 대목으로 새 설정 만들기' : '설정 직접 추가'}</h2>
+      ${fromQuote ? `<blockquote class="quote pick-quote">${esc(opts.quote)}</blockquote>` : ''}
+      <div class="field"><span class="lbl">누구 설정인가요?</span>
+        <div class="seg" id="mWho"><button data-value="ritsu">리츠</button><button data-value="enju">엔쥬</button></div></div>
+      <label class="field"><span class="lbl">설정 <em class="hint">짧게 — 예: “단 음식을 싫어함”</em></span>
+        <textarea id="mText" style="min-height:70px" placeholder="${fromQuote ? '이 대목에서 알 수 있는 설정을 한 줄로' : ''}"></textarea></label>
+      ${fromQuote ? `<div class="btn-row" style="margin:-6px 0 12px"><button class="btn btn-sm" id="mAi"><svg><use href="#i-wand"/></svg>AI로 한 줄 정리</button></div>` : ''}
+      <label class="field"><span class="lbl">카테고리</span><select id="mCat"></select></label>
+      ${fromQuote ? '' : `<label class="field"><span class="lbl">근거 대사 <em class="hint">선택 · 저장된 대화에 있으면 자동으로 연결돼요</em></span><textarea id="mQuote" style="min-height:64px" placeholder="이 설정이 나온 대사를 붙여넣어 두면 나중에 확인하기 쉬워요"></textarea></label>`}
       <div class="modal-foot"><button class="btn btn-ghost" data-close>취소</button><button class="btn btn-primary" id="mSave"><svg><use href="#i-check"/></svg>추가</button></div>`,
       (box) => {
+        const paint = () => {
+          $$('#mWho button', box).forEach((b) => b.classList.toggle('on', b.dataset.value === who));
+          const sel = $('#mCat', box);
+          const cur = sel.value || cat || 'etc';
+          sel.innerHTML = catOptions(cur, who);
+        };
+        $('#mWho', box).onclick = (e) => {
+          const b = e.target.closest('button');
+          if (!b) return;
+          who = b.dataset.value;
+          paint();
+        };
+        paint();
         $('[data-close]', box).onclick = closeModal;
+        const ai = $('#mAi', box);
+        if (ai)
+          ai.onclick = async () => {
+            const log = opts.logId && N.state.logs[opts.logId];
+            ai.disabled = true;
+            ai.innerHTML = '<i class="spin"></i>정리하는 중';
+            try {
+              const r = await N.gemini.factFromQuote(opts.quote, log && log.private ? 'paid' : 'auto');
+              $('#mText', box).value = r.text;
+              who = r.char;
+              paint();
+              $('#mCat', box).value = r.cat;
+            } catch (err) {
+              toast(err.message, { err: true });
+            } finally {
+              ai.disabled = false;
+              ai.innerHTML = '<svg><use href="#i-wand"/></svg>AI로 한 줄 정리';
+            }
+          };
         $('#mSave', box).onclick = () => {
           const text = $('#mText', box).value.trim();
-          if (!text) return toast('내용을 적어 주세요', { err: true });
-          const quote = $('#mQuote', box).value.trim();
+          if (!text) return toast('설정을 한 줄로 적어 주세요', { err: true });
+          let ev = [];
+          if (fromQuote) ev = [{ id: U.uid(), quote: opts.quote, logId: opts.logId || null, at: Date.now() }];
+          else {
+            const raw = $('#mQuote', box).value.trim();
+            if (raw) {
+              const l = findLogFor(raw);
+              ev = [{ id: U.uid(), quote: l.quote, logId: l.logId, at: Date.now() }];
+            }
+          }
           let f;
           N.commit((s) => {
-            f = N.addFact(s, {
-              char: charId,
-              cat: $('#mCat', box).value,
-              text,
-              status: 'canon',
-              fresh: false,
-              evidence: quote ? [{ id: U.uid(), quote, logId: null, at: Date.now() }] : [],
-            });
+            f = N.addFact(s, { char: who, cat: $('#mCat', box).value, text, status: 'canon', fresh: false, evidence: ev });
           });
           closeModal();
-          if (view.tab !== charId) setTab(charId);
+          if (fromQuote) {
+            toast(`${N.CHARS[who].name} 설정으로 추가했어요`, { action: { label: '보기', fn: () => goToFact(f.id) } });
+            return;
+          }
+          if (view.tab !== who) setTab(who);
           flashFact(f.id);
         };
+      }
+    );
+  }
+
+  function addEvidenceModal(factId) {
+    const f = N.state.facts[factId];
+    if (!f) return;
+    openModal(
+      `<h2>근거 추가</h2><p class="hint">「${esc(f.text)}」의 근거가 되는 대사나 서술을 붙여넣으세요. 저장된 대화에 있는 문장이면 그 대화와 자동으로 연결돼요.</p>
+      <textarea id="eQuote" style="min-height:110px"></textarea>
+      <div class="modal-foot"><button class="btn btn-ghost" data-close>취소</button><button class="btn btn-primary" id="eSave"><svg><use href="#i-check"/></svg>추가</button></div>`,
+      (box) => {
+        $('[data-close]', box).onclick = closeModal;
+        $('#eSave', box).onclick = () => {
+          const raw = $('#eQuote', box).value.trim();
+          if (!raw) return toast('근거를 붙여넣어 주세요', { err: true });
+          const l = findLogFor(raw);
+          let added = false;
+          N.commit((s) => (added = attachEvidence(s, factId, l.quote, l.logId)));
+          view.openEv.add(factId);
+          closeModal();
+          toast(added ? (l.logId ? `근거를 추가했어요 · 「${logTitle(l.logId)}」 대화와 연결` : '근거를 추가했어요') : '이미 있는 근거예요');
+        };
+      }
+    );
+  }
+
+  /* ---------- AI evidence search over saved logs ---------- */
+  // factIds: which facts to look for. Goes log by log, so it can stop halfway and keep what it found.
+  function findEvidenceModal(factIds, title) {
+    const logs = Object.values(N.state.logs).sort((a, b) => a.createdAt - b.createdAt);
+    if (!logs.length) return toast('저장된 대화가 없어요. 수집하기에서 대화를 먼저 넣어 주세요', { err: true });
+    if (!N.gemini.hasKey('free') && !N.gemini.hasKey('paid'))
+      return toast('Gemini API 키가 필요해요', { err: true, action: { label: '설정으로', fn: () => setTab('settings') } });
+    let stop = false;
+    openModal(
+      `<h2>${esc(title)}</h2>
+      <p class="hint">저장된 대화 ${logs.length}개를 하나씩 읽으며 설정 ${factIds.length}개의 근거를 찾아요. 찾은 근거는 원문에 실제로 있는 문장만 붙여요.</p>
+      <div class="loading" id="fStatus"><i class="spin"></i>준비 중…</div>
+      <div class="progress"><i id="fBar" style="width:0"></i></div>
+      <div class="modal-foot"><button class="btn btn-ghost" id="fStop">여기까지만</button></div>`,
+      async (box) => {
+        $('#fStop', box).onclick = () => {
+          stop = true;
+          $('#fStop', box).disabled = true;
+        };
+        let found = 0;
+        const touched = new Set();
+        let skipped = 0;
+        const open = () => !stop && box.contains($('#fStatus', box)) && !$('#modal').hidden;
+        for (let i = 0; i < logs.length && open(); i++) {
+          const log = logs[i];
+          $('#fStatus', box).innerHTML = `<i class="spin"></i>「${esc(log.title)}」 읽는 중 (${i + 1}/${logs.length}) · 지금까지 근거 ${found}개`;
+          $('#fBar', box).style.width = `${Math.round((i / logs.length) * 100)}%`;
+          const facts = factIds.map((id) => N.state.facts[id]).filter(Boolean);
+          if (!facts.length) break;
+          const keys = log.private ? 'paid' : 'auto';
+          if (keys === 'paid' && !N.gemini.hasKey('paid')) {
+            skipped++;
+            continue;
+          }
+          try {
+            const hits = await N.gemini.findEvidence(log.text, facts, keys);
+            N.commit((s) =>
+              hits.forEach((h) => {
+                if (attachEvidence(s, h.factId, h.quote, log.id)) {
+                  found++;
+                  touched.add(h.factId);
+                }
+              })
+            );
+          } catch (err) {
+            if (!err.blocked && !err.tooLong) {
+              toast(err.message, { err: true });
+              break;
+            }
+            skipped++;
+          }
+        }
+        if ($('#fStatus', box) && !$('#modal').hidden) closeModal();
+        toast(
+          found
+            ? `설정 ${touched.size}개에 근거 ${found}개를 붙였어요${skipped ? ` · 대화 ${skipped}개는 건너뜀` : ''}`
+            : `새로 찾은 근거가 없어요${skipped ? ` · 대화 ${skipped}개는 건너뜀` : ''}`,
+          { ms: 5000 }
+        );
+        touched.forEach((id) => view.openEv.add(id));
+        if (N.CHARS[view.tab]) renderFactList(view.tab);
       }
     );
   }
@@ -982,10 +1231,6 @@
     $('#pickbar').hidden = true;
     document.body.classList.remove('picking');
   }
-  function renderPickbar() {
-    $$('#pickChar button').forEach((b) => b.classList.toggle('on', b.dataset.value === view.pickChar));
-    $('#pickCats').innerHTML = N.CATS.map((c) => `<button data-cat="${c.id}">${esc(N.catLabel(c.id, view.pickChar))}</button>`).join('');
-  }
   const onSelection = U.debounce(() => {
     const sel = window.getSelection();
     const reader = $('#reader');
@@ -997,51 +1242,22 @@
     if (t.length < 2) return hidePickbar();
     picked = t;
     $('#pickPreview').textContent = `“${t.replace(/\s+/g, ' ')}”`;
-    renderPickbar();
     $('#pickbar').hidden = false;
     document.body.classList.add('picking');
   }, 120);
   document.addEventListener('selectionchange', onSelection);
 
-  $('#pickChar').addEventListener('mousedown', (e) => e.preventDefault());
-  $('#pickCats').addEventListener('mousedown', (e) => e.preventDefault());
-  $('#pickChar').addEventListener('click', (e) => {
-    const b = e.target.closest('button');
-    if (!b) return;
-    view.pickChar = b.dataset.value;
-    renderPickbar();
-  });
-  $('#pickCats').addEventListener('click', (e) => {
-    const b = e.target.closest('button[data-cat]');
+  $('#pickbar').addEventListener('mousedown', (e) => e.preventDefault());
+  $('#pickbar').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-pick]');
     if (!b || !picked || !view.readerLogId) return;
     const quote = picked;
-    const charId = view.pickChar;
-    let f;
-    N.commit((s) => {
-      f = N.addFact(s, {
-        char: charId,
-        cat: b.dataset.cat,
-        text: quote.replace(/\s+/g, ' ').slice(0, 200),
-        status: 'canon',
-        fresh: false,
-        evidence: [{ id: U.uid(), quote, logId: view.readerLogId, at: Date.now() }],
-      });
-    });
+    const logId = view.readerLogId;
     picked = '';
     window.getSelection().removeAllRanges();
     hidePickbar();
-    toast(`${N.CHARS[charId].name} · ${N.catLabel(b.dataset.cat, charId)}에 추가했어요`, {
-      action: {
-        label: '짧게 다듬기',
-        fn: () => {
-          goToFact(f.id);
-          view.editing = f.id;
-          renderFactList(f.char);
-          const t = $(`.fact[data-id="${f.id}"] textarea`);
-          if (t) t.focus();
-        },
-      },
-    });
+    if (b.dataset.pick === 'attach') attachEvidenceModal(quote, logId);
+    else addFactModal(N.CHARS[view.target] ? view.target : view.pickChar, null, { quote, logId });
   });
 
   /* ================= logs ================= */
