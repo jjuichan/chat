@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>리츠 노트 · Ritsu × Enju</title>
+  <meta name="description" content="채팅 로그에서 리츠의 설정을 모아 정리하는 개인 위키 — ずうっといっしょ！" />
+  <meta name="theme-color" content="#F5F0EE" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='7' y='4' width='18' height='24' rx='3' fill='none' stroke='%23E68AA7' stroke-width='3'/%3E%3Cpath d='M12 11h8M12 16h8M12 21h5' stroke='%23C8102E' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <link rel="stylesheet" href="css/notes.css" />
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-wand" viewBox="0 0 24 24"><path d="m4 20 11-11 2 2L6 22zM15 3v3M19.5 4.5l-2 2M21 9h-3M13 7.5 12 5"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a2 2 0 0 0-2-2h-7.5a2 2 0 0 0-2 2v7.5a2 2 0 0 0 2 2h2.5"/></symbol>
+      <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13M10 11v5.5M14 11v5.5"/></symbol>
+      <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18.5h10a4 4 0 0 0 .6-7.95A5.5 5.5 0 0 0 7.1 9.1 4.7 4.7 0 0 0 7 18.5z"/></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/></symbol>
+      <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 15V4M7 8.5l5-5 5 5M5 20h14"/></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.8-4.8"/></symbol>
+      <symbol id="i-book" viewBox="0 0 24 24"><path d="M5 4.5h10.5a3 3 0 0 1 3 3V20H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h10.5"/></symbol>
+      <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c.9-3.6 3.9-5.6 7.5-5.6s6.6 2 7.5 5.6"/></symbol>
+      <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4.5 6.5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H11l-4.5 3.5V16.5h0a2 2 0 0 1-2-2z"/></symbol>
+      <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.2M12 18.3v2.2M3.5 12h2.2M18.3 12h2.2M6 6l1.6 1.6M16.4 16.4 18 18M6 18l1.6-1.6M16.4 7.6 18 6"/></symbol>
+      <symbol id="i-sync" viewBox="0 0 24 24"><path d="M19.5 12a7.5 7.5 0 0 1-13 5.1M4.5 12a7.5 7.5 0 0 1 13-5.1"/><path d="M17.5 3.5v3.4h-3.4M6.5 20.5v-3.4h3.4"/></symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4 2.8 19.5h18.4z"/><path d="M12 10v4.5M12 17.2v.1"/></symbol>
+      <symbol id="i-quote" viewBox="0 0 24 24"><path d="M5 18c2.5-1 4-3 4-6.5V7H4.5v5H8M15 18c2.5-1 4-3 4-6.5V7h-4.5v5H18"/></symbol>
+      <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    </defs>
+  </svg>
+
+  <header class="topbar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 44 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="10.5" fill="none" stroke="var(--ritsu)" stroke-width="3"/>
+        <circle cx="28" cy="16" r="10.5" fill="none" stroke="var(--enju)" stroke-width="3"/>
+        <path d="M19.59 6.13A10.5 10.5 0 0 1 24.04 9.25" fill="none" stroke="var(--ritsu)" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <div class="brand-text">
+        <strong>리츠 노트</strong>
+        <small>설정 수집기 · <b class="c-r">Ritsu</b> × <b class="c-e">Enju</b></small>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="sync-chip" id="syncChip" hidden><svg><use href="#i-cloud"/></svg><span></span></button>
+      <a class="btn btn-sm btn-ghost" href="index.html" title="ずうっと 발췌기로 이동"><span>발췌기</span><svg><use href="#i-arrow"/></svg></a>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs" aria-label="메뉴">
+    <button data-tab="ritsu"><svg><use href="#i-user"/></svg><span>리츠</span><em class="tab-badge" data-badge="ritsu" hidden></em></button>
+    <button data-tab="enju"><svg><use href="#i-user"/></svg><span>엔쥬</span><em class="tab-badge" data-badge="enju" hidden></em></button>
+    <button data-tab="collect"><svg><use href="#i-wand"/></svg><span>수집하기</span></button>
+    <button data-tab="logs"><svg><use href="#i-chat"/></svg><span>대화 기록</span></button>
+    <button data-tab="settings"><svg><use href="#i-gear"/></svg><span>설정·백업</span></button>
+  </nav>
+
+  <div class="banners" id="banners"></div>
+
+  <main class="main">
+    <!-- ============ profile (리츠 / 엔쥬 share one view) ============ -->
+    <section class="page" data-page="profile" id="profilePage"></section>
+
+    <!-- ============ collect ============ -->
+    <section class="page" data-page="collect">
+      <div class="card">
+        <h2 class="card-title">대화 붙여넣기</h2>
+        <p class="lead">채팅 로그를 그대로 붙여넣으세요. <b>AI로 뽑기</b>를 누르면 Gemini가 설정 후보를 골라 주고, 저장 전에 하나씩 확인할 수 있어요. 직접 고르고 싶으면 <b>읽으면서 직접 고르기</b>를 눌러 문장을 드래그하세요.</p>
+        <div class="field-grid">
+          <label class="field">
+            <span class="lbl">제목 <em class="hint">비워두면 날짜로 저장</em></span>
+            <input type="text" id="logTitle" placeholder="예: 첫 데이트, 비 오는 날 편의점" />
+          </label>
+          <label class="field">
+            <span class="lbl">누구 설정을 모을까요?</span>
+            <div class="seg" id="targetSeg">
+              <button data-value="ritsu" class="on">리츠</button>
+              <button data-value="enju">엔쥬</button>
+            </div>
+          </label>
+        </div>
+        <textarea id="logInput" class="raw" spellcheck="false" placeholder="*리츠는 컵을 내려놓았다.*&#10;&quot;단 건 별로야. 넌 알잖아.&quot;&#10;&#10;엔쥬: 그럼 이건 내가 먹을게."></textarea>
+        <div class="row-between">
+          <span class="hint" id="logCount">0자</span>
+          <div class="btn-row">
+            <button class="btn" id="btnReadOnly"><svg><use href="#i-book"/></svg>읽으면서 직접 고르기</button>
+            <button class="btn btn-brand" id="btnExtract"><svg><use href="#i-wand"/></svg>AI로 설정 뽑기</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="reviewCard" hidden></div>
+
+      <div class="card" id="readerCard" hidden>
+        <div class="row-between">
+          <h2 class="card-title" id="readerTitle">대화 읽기</h2>
+          <button class="btn btn-sm btn-ghost" id="btnCloseReader"><svg><use href="#i-x"/></svg>닫기</button>
+        </div>
+        <p class="hint">설정이 될 만한 문장을 <b>드래그</b>하면 아래에 카테고리 버튼이 나와요. 이미 근거로 쓰인 문장은 <mark class="m-demo">색칠</mark>돼 있어요.</p>
+        <div class="reader" id="reader"></div>
+      </div>
+    </section>
+
+    <!-- ============ logs ============ -->
+    <section class="page" data-page="logs">
+      <div class="card">
+        <h2 class="card-title">저장된 대화</h2>
+        <p class="hint">수집할 때 넣은 대화가 여기 쌓여요. 다시 읽으면서 설정을 더 고르거나, AI로 다시 뽑을 수 있어요.</p>
+        <div class="log-list" id="logList"></div>
+      </div>
+    </section>
+
+    <!-- ============ settings ============ -->
+    <section class="page" data-page="settings">
+      <div class="card" id="backupCard"></div>
+
+      <div class="card">
+        <h2 class="card-title">구글 드라이브 자동 동기화</h2>
+        <p class="lead">켜 두면 수정할 때마다 내 구글 드라이브의 <b>앱 전용 숨김 폴더</b>에 저장돼요. 캐시를 지워도, 다른 기기에서 열어도 로그인만 하면 그대로예요. 드라이브의 다른 파일은 볼 수 없는 권한만 써요.</p>
+        <label class="field">
+          <span class="lbl">OAuth 클라이언트 ID</span>
+          <input type="text" id="clientId" placeholder="1234567890-abc...apps.googleusercontent.com" autocomplete="off" spellcheck="false" />
+        </label>
+        <div class="row-between">
+          <span class="hint" id="driveInfo"></span>
+          <div class="btn-row" id="driveBtns"></div>
+        </div>
+        <details class="guide">
+          <summary>클라이언트 ID 만드는 법 (처음 한 번, 5분)</summary>
+          <ol>
+            <li><a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">Google Cloud 콘솔</a>에서 프로젝트를 하나 만들어요. Gemini 키를 만든 프로젝트를 써도 돼요.</li>
+            <li><a href="https://console.cloud.google.com/apis/library/drive.googleapis.com" target="_blank" rel="noopener">Google Drive API</a> 페이지에서 <b>사용</b>을 눌러요.</li>
+            <li><a href="https://console.cloud.google.com/auth/overview" target="_blank" rel="noopener">Google 인증 플랫폼(OAuth 동의 화면)</a>에서 시작하기 → 앱 이름 아무거나, 대상은 <b>외부</b>로 설정해요.</li>
+            <li>같은 곳의 <b>대상(Audience) → 테스트 사용자</b>에 내 구글 이메일을 추가해요. 앱을 ‘게시’하지 않아도 나만 쓰기엔 충분해요.</li>
+            <li><b>클라이언트 → 클라이언트 만들기</b> → 유형 <b>웹 애플리케이션</b>. <b>승인된 JavaScript 원본</b>에 이 페이지 주소를 넣어요: <code id="originHint"></code></li>
+            <li>만들어진 <b>클라이언트 ID</b>(…apps.googleusercontent.com)를 위 칸에 붙여넣고 <b>연결하기</b>를 눌러요. 처음엔 ‘확인되지 않은 앱’ 경고가 뜰 수 있는데, 내가 만든 앱이니 <b>계속</b>을 누르면 돼요.</li>
+          </ol>
+          <p class="hint">클라이언트 ID는 비밀번호가 아니라서 노출돼도 괜찮아요. 등록한 주소에서만 로그인이 열려요.</p>
+        </details>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">Gemini API</h2>
+        <p class="lead">키는 <b>이 브라우저에만</b> 저장되고, 백업 파일이나 드라이브 동기화에는 들어가지 않아요. 다른 기기에서는 한 번 더 입력해 주세요.</p>
+        <label class="field">
+          <span class="lbl">API 키 <a class="hint-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">AI Studio에서 받기</a></span>
+          <div class="input-row">
+            <input type="password" id="geminiKey" placeholder="AIza..." autocomplete="off" spellcheck="false" />
+            <button class="icon-btn" id="btnShowKey" title="키 보기" aria-label="키 보기"><svg><use href="#i-eye"/></svg></button>
+          </div>
+        </label>
+        <label class="field">
+          <span class="lbl">모델 <em class="hint">flash 계열이 빠르고 무료 한도가 넉넉해요</em></span>
+          <div class="input-row">
+            <input type="text" id="model" list="modelList" spellcheck="false" />
+            <button class="btn btn-sm" id="btnModels">목록 불러오기</button>
+          </div>
+          <datalist id="modelList"></datalist>
+        </label>
+        <div class="row-between">
+          <span class="hint" id="geminiInfo"></span>
+          <button class="btn btn-sm" id="btnTestKey">연결 테스트</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">이름 인식</h2>
+        <p class="hint">로그에서 캐릭터를 부르는 이름을 쉼표로 적어 주세요. 별명이나 <code>{{user}}</code>, 내 닉네임을 넣어두면 AI가 누가 누군지 더 잘 구분해요.</p>
+        <label class="field"><span class="lbl c-r">리츠</span><input type="text" id="aliasRitsu" /></label>
+        <label class="field"><span class="lbl c-e">엔쥬</span><input type="text" id="aliasEnju" /></label>
+      </div>
+
+      <div class="card danger-zone">
+        <h2 class="card-title">전체 삭제</h2>
+        <p class="hint">이 기기의 설정과 대화 기록을 모두 지워요. 드라이브 동기화가 켜져 있으면 드라이브에서도 지워지니, 먼저 파일로 백업해 두세요.</p>
+        <button class="btn btn-sm danger" id="btnWipe"><svg><use href="#i-trash"/></svg>모두 지우기</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- selection toolbar for picking facts by hand -->
+  <div class="pickbar" id="pickbar" hidden>
+    <div class="pickbar-head">
+      <span class="pick-preview" id="pickPreview"></span>
+      <div class="seg seg-sm" id="pickChar">
+        <button data-value="ritsu" class="on">리츠</button>
+        <button data-value="enju">엔쥬</button>
+      </div>
+    </div>
+    <div class="pick-cats" id="pickCats"></div>
+  </div>
+
+  <div class="modal" id="modal" hidden>
+    <div class="modal-box" role="dialog" aria-modal="true" id="modalBox"></div>
+  </div>
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+
+  <script src="js/notes/store.js"></script>
+  <script src="js/notes/gemini.js"></script>
+  <script src="js/notes/drive.js"></script>
+  <script src="js/notes/app.js"></script>
+</body>
+</html>
